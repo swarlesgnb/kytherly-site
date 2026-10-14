@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kytherly</title>
+<meta name="description" content="Kytherly builds front-desk automation for home-service trades: missed-call text-back, instant lead replies and review requests.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23c8904f' stroke-width='2.4'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='4'/%3E%3Cpath d='M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M6 26l3-3M23 9l3-3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a salvaged bronze mechanism on a deep-sea ground. Hero splits text / live gear train;
+   sections run as plates on one center column, each with a mono "inscription" label. Dark-first. */
+:root{
+  --sea:#0b1416;        /* ground: the water the mechanism was pulled from */
+  --deep:#111e21;       /* raised plate */
+  --deeper:#0e191b;
+  --line:#22363a;
+  --parch:#ebe1cd;      /* text */
+  --mute:#9eaca6;
+  --bronze:#c8904f;
+  --bronze-hi:#e9bb7c;
+  --bronze-lo:#7a5226;
+  --verdigris:#72b8a1;
+  --verd-soft:rgba(114,184,161,.12);
+  --on-bronze:#1a1208;
+  --shadow:rgba(0,0,0,.45);
+  --display:"Marcellus","Trajan Pro","Palatino Linotype",Georgia,serif;
+  --body:"Hanken Grotesk","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --step-0:1rem; --step-1:1.2rem; --step-2:1.6rem; --step-3:2.4rem; --step-4:clamp(2.6rem,6.2vw,5.2rem);
+  --radius:14px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --sea:#e7eae3; --deep:#f4f5f0; --deeper:#eceee8; --line:#c8cfc5;
+    --parch:#16211f; --mute:#55635e;
+    --bronze:#94601f; --bronze-hi:#8a5719; --bronze-lo:#5e3c14;
+    --verdigris:#24684f; --verd-soft:rgba(45,122,99,.10);
+    --on-bronze:#fff8ec; --shadow:rgba(30,40,35,.16);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --sea:#e7eae3; --deep:#f4f5f0; --deeper:#eceee8; --line:#c8cfc5;
+  --parch:#16211f; --mute:#55635e;
+  --bronze:#94601f; --bronze-hi:#8a5719; --bronze-lo:#5e3c14;
+  --verdigris:#24684f; --verd-soft:rgba(45,122,99,.10);
+  --on-bronze:#fff8ec; --shadow:rgba(30,40,35,.16);
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--sea); color:var(--parch);
+  font-family:var(--body); font-size:17px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--verdigris); outline-offset:3px; border-radius:6px}
+.wrap{
+  max-width:1180px; margin-inline:auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+h1,h2,h3{font-family:var(--display); font-weight:400; text-wrap:balance; margin:0; line-height:1.08; letter-spacing:.005em}
+h2{font-size:var(--step-3)}
+h3{font-size:var(--step-1); line-height:1.25}
+p{margin:0}
+.label{
+  font-family:var(--mono); font-size:.74rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--verdigris); display:flex; align-items:center; gap:.7em;
+}
+.label::before{content:""; width:22px; height:1px; background:currentColor; opacity:.7}
+.lede{color:var(--mute); font-size:var(--step-1); max-width:58ch}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; gap:.6em; text-decoration:none; cursor:pointer;
+  font:600 1rem/1 var(--body); padding:1em 1.4em; border-radius:999px; border:1px solid transparent;
+  transition:transform .2s cubic-bezier(.2,.8,.2,1), background-color .2s, border-color .2s, box-shadow .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{
+  background:linear-gradient(180deg,var(--bronze-hi),var(--bronze)); color:var(--on-bronze);
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 10px 30px -12px var(--bronze);
+}
+.btn-primary:hover{box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 14px 36px -10px var(--bronze)}
+.btn-ghost{border-color:var(--line); color:var(--parch); background:transparent}
+.btn-ghost:hover{border-color:var(--verdigris)}
+.btn svg{width:1em; height:1em}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+  background:color-mix(in srgb, var(--sea) 82%, transparent);
+  backdrop-filter:blur(14px) saturate(1.2); -webkit-backdrop-filter:blur(14px) saturate(1.2);
+  border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.nav .wrap{display:flex; align-items:center; justify-content:space-between; gap:20px; padding-block:14px}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none; font-family:var(--display); font-size:1.45rem; letter-spacing:.02em}
+.brand svg{width:30px; height:30px; color:var(--bronze)}
+.brand:hover svg{animation:spin 2.4s cubic-bezier(.4,0,.2,1)}
+@keyframes spin{to{transform:rotate(90deg)}}
+.nav-links{display:flex; align-items:center; gap:28px; font-size:.95rem}
+.nav-links a:not(.btn){text-decoration:none; color:var(--mute); transition:color .2s}
+.nav-links a:not(.btn):hover{color:var(--parch)}
+.nav .btn{padding:.75em 1.15em; font-size:.92rem}
+
+/* ---------- hero ---------- */
+.hero{position:relative; overflow:hidden}
+.hero::before{ /* sea-light */
+  content:""; position:absolute; inset:-20% -10% auto 30%; height:120%;
+  background:radial-gradient(closest-side, var(--verd-soft), transparent 70%); pointer-events:none;
+}
+.hero .wrap{display:grid; grid-template-columns:1.05fr 1fr; gap:40px; align-items:center; padding-block:56px 40px; position:relative}
+.hero-copy{display:grid; gap:26px; min-width:0; position:relative; z-index:2}
+.hero h1{font-size:var(--step-4); letter-spacing:-.005em}
+.hero h1 em{font-style:normal; color:var(--bronze-hi);
+  background:linear-gradient(100deg,var(--bronze-hi),var(--bronze) 60%,var(--bronze-hi));
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.hero-ctas{display:flex; flex-wrap:wrap; gap:12px}
+.hero-meta{display:flex; flex-wrap:wrap; gap:8px 22px; font-family:var(--mono); font-size:.78rem; color:var(--mute); letter-spacing:.04em}
+.hero-meta span{display:inline-flex; align-items:center; gap:8px}
+.hero-meta span::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--verdigris)}
+
+.machine{position:relative; aspect-ratio:1/1; width:100%; max-width:600px; justify-self:center}
+.machine canvas{
+  position:absolute; inset:-14%; width:128%; height:128%;
+  -webkit-mask-image:radial-gradient(closest-side, #000 62%, transparent 100%);
+          mask-image:radial-gradient(closest-side, #000 62%, transparent 100%);
+}
+
+/* example conversation, floating over the mechanism */
+.ticket{
+  position:absolute; left:-4%; bottom:4%; width:min(330px,78%);
+  background:color-mix(in srgb, var(--deep) 88%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:0 30px 60px -30px var(--shadow);
+  padding:14px; display:grid; gap:10px; font-size:.86rem;
+}
+.ticket-head{display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--mute)}
+.ticket-head b{font-weight:500; color:var(--verdigris)}
+.log{display:grid; gap:8px; min-height:188px; align-content:start}
+.ev{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start;
+  animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.ev time{font-family:var(--mono); font-size:.72rem; color:var(--mute); padding-top:2px; font-variant-numeric:tabular-nums}
+.ev .bubble{padding:7px 10px; border-radius:12px; line-height:1.4; min-width:0}
+.ev.sys .bubble{padding:2px 0; color:var(--mute)}
+.ev.sys .bubble strong{color:var(--parch); font-weight:600}
+.ev.out .bubble{background:var(--verd-soft); border:1px solid color-mix(in srgb, var(--verdigris) 30%, transparent)}
+.ev.in .bubble{background:color-mix(in srgb, var(--parch) 7%, transparent); border:1px solid var(--line)}
+.ev.win .bubble{padding:4px 10px; background:color-mix(in srgb, var(--bronze) 16%, transparent); color:var(--bronze-hi); font-weight:600; border:1px solid color-mix(in srgb, var(--bronze) 40%, transparent)}
+@keyframes rise{from{opacity:.0; transform:translateY(6px)}to{opacity:1; transform:none}}
+
+/* ---------- sections ---------- */
+section{position:relative; scroll-margin-top:72px}
+.plate{padding-block:96px}
+.plate + .plate{border-top:1px solid var(--line)}
+.sec-head{display:grid; gap:18px; max-width:760px; margin-bottom:48px}
+
+/* leak calculator */
+.leak{display:grid; grid-template-columns:1fr 1.05fr; gap:28px; align-items:stretch}
+.controls{display:grid; gap:26px; align-content:start; padding:30px; border:1px solid var(--line); border-radius:var(--radius); background:var(--deep)}
+.ctrl{display:grid; gap:10px}
+.ctrl-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+.ctrl label{font-weight:600}
+.ctrl output{font-family:var(--mono); font-size:1.05rem; color:var(--bronze-hi); font-variant-numeric:tabular-nums}
+.ctrl small{color:var(--mute); font-size:.85rem}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:28px; background:transparent; cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:4px; background:linear-gradient(90deg,var(--bronze) var(--p,50%),var(--line) var(--p,50%))}
+input[type=range]::-moz-range-track{height:4px; border-radius:4px; background:linear-gradient(90deg,var(--bronze) var(--p,50%),var(--line) var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; margin-top:-9px; width:22px; height:22px; border-radius:50%; background:var(--parch); border:5px solid var(--bronze); box-shadow:0 2px 8px var(--shadow); transition:transform .15s}
+input[type=range]::-moz-range-thumb{width:12px; height:12px; border-radius:50%; background:var(--parch); border:5px solid var(--bronze)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+
+.readout{
+  position:relative; overflow:hidden; border-radius:var(--radius); padding:34px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--bronze) 18%, transparent), transparent 60%),
+    var(--deeper);
+  border:1px solid color-mix(in srgb, var(--bronze) 35%, var(--line));
+  display:grid; gap:22px; align-content:space-between;
+}
+.readout .label{color:var(--bronze-hi)}
+.big{font-family:var(--display); font-size:clamp(3rem,7.5vw,5.4rem); line-height:1; font-variant-numeric:tabular-nums; color:var(--parch)}
+.big small{font-family:var(--body); font-size:1rem; color:var(--mute); margin-left:.3em}
+.readout-rows{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; border-top:1px dashed var(--line); padding-top:18px}
+.readout-rows div{display:grid; gap:2px; min-width:0}
+.readout-rows dt{font-family:var(--mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--mute)}
+.readout-rows dd{margin:0; font-family:var(--mono); font-size:1.15rem; font-variant-numeric:tabular-nums}
+.readout .fine{font-size:.85rem; color:var(--mute); max-width:46ch}
+.readout canvas{position:absolute; right:-70px; top:-70px; width:240px; height:240px; opacity:.22; pointer-events:none}
+
+/* three gears */
+.gears{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+.gear-card{
+  display:grid; grid-template-rows:auto auto auto 1fr; gap:14px; padding:28px; border-radius:var(--radius);
+  background:var(--deep); border:1px solid var(--line); min-width:0;
+  transition:border-color .3s, transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.gear-card:hover{border-color:color-mix(in srgb, var(--bronze) 50%, var(--line)); transform:translateY(-3px)}
+.gear-card:hover .g-ico{transform:rotate(45deg)}
+.g-top{display:flex; justify-content:space-between; align-items:center}
+.g-ico{width:44px; height:44px; color:var(--bronze); transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
+.when{font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--verdigris)}
+.gear-card p{color:var(--mute)}
+.thread{display:grid; gap:6px; align-self:end; margin-top:6px; padding-top:16px; border-top:1px dashed var(--line); font-size:.85rem}
+.thread .b{padding:7px 11px; border-radius:12px; max-width:92%; line-height:1.4}
+.thread .o{justify-self:end; background:var(--verd-soft); border:1px solid color-mix(in srgb, var(--verdigris) 30%, transparent)}
+.thread .i{justify-self:start; background:color-mix(in srgb, var(--parch) 7%, transparent); border:1px solid var(--line)}
+.compliance{margin-top:26px; display:flex; gap:14px; align-items:flex-start; color:var(--mute); font-size:.92rem; max-width:80ch}
+.compliance svg{flex:none; width:20px; height:20px; color:var(--verdigris); margin-top:3px}
+
+/* process */
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:0; counter-reset:step; position:relative}
+.steps::before{content:""; position:absolute; left:0; right:0; top:23px; height:1px; background:linear-gradient(90deg,var(--bronze),var(--line))}
+.step{display:grid; gap:12px; padding-right:24px; min-width:0}
+.step .n{
+  width:46px; height:46px; border-radius:50%; display:grid; place-items:center; position:relative;
+  font-family:var(--mono); font-size:.9rem; color:var(--bronze-hi); background:var(--sea);
+  border:1px solid var(--bronze);
+}
+.step .dur{font-family:var(--mono); font-size:.74rem; color:var(--mute); letter-spacing:.06em}
+.step p{color:var(--mute); font-size:.96rem}
+
+/* pricing */
+.tiers{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch}
+.tier{display:grid; grid-template-rows:auto auto auto auto 1fr auto; gap:16px; padding:30px; border-radius:var(--radius); border:1px solid var(--line); background:var(--deep); min-width:0}
+.tier.feature{
+  border-color:color-mix(in srgb, var(--bronze) 55%, var(--line));
+  background:radial-gradient(100% 60% at 50% 0%, color-mix(in srgb, var(--bronze) 14%, transparent), transparent 70%), var(--deep);
+  box-shadow:0 30px 70px -40px var(--bronze);
+}
+.tier-name{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.tier-name h3{font-size:var(--step-2)}
+.pill{font-family:var(--mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; padding:5px 9px; border-radius:999px; color:var(--on-bronze); background:var(--bronze); white-space:nowrap}
+.price{display:flex; align-items:baseline; gap:6px; font-variant-numeric:tabular-nums}
+.price b{font-family:var(--display); font-weight:400; font-size:2.6rem; line-height:1}
+.price span{color:var(--mute)}
+.setup{font-family:var(--mono); font-size:.78rem; color:var(--mute); margin-top:-8px}
+.tier > p{color:var(--mute); font-size:.95rem}
+.tier ul{list-style:none; margin:0; padding:0; display:grid; gap:10px; align-content:start; font-size:.95rem}
+.tier li{display:grid; grid-template-columns:18px 1fr; gap:10px}
+.tier li svg{width:16px; height:16px; margin-top:4px; color:var(--verdigris)}
+.tier .btn{justify-content:center}
+.guarantee{margin-top:28px; padding:22px 26px; border-radius:var(--radius); border:1px dashed color-mix(in srgb, var(--verdigris) 50%, var(--line)); display:flex; gap:16px; align-items:flex-start; max-width:900px}
+.guarantee svg{flex:none; width:26px; height:26px; color:var(--verdigris)}
+.guarantee strong{display:block; font-family:var(--display); font-weight:400; font-size:var(--step-1); margin-bottom:4px}
+.guarantee p{color:var(--mute)}
+
+/* name story */
+.story{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center}
+.story-copy{display:grid; gap:22px; min-width:0}
+.story-copy p{color:var(--mute); max-width:58ch}
+.story-copy p.pull{font-family:var(--display); font-size:var(--step-2); line-height:1.3; color:var(--parch)}
+.facts{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+.fact{background:var(--deep); padding:22px; display:grid; gap:4px; align-content:start; min-width:0}
+.fact b{font-family:var(--display); font-weight:400; font-size:2.1rem; color:var(--bronze-hi); line-height:1.1; font-variant-numeric:tabular-nums}
+.fact span{font-size:.9rem; color:var(--mute)}
+.fact.wide{grid-column:1/-1; display:flex; align-items:center; gap:20px}
+.fact.wide canvas{width:96px; height:96px; flex:none}
+
+/* audit form */
+.cta-band{
+  background:
+    radial-gradient(60% 120% at 0% 100%, var(--verd-soft), transparent 60%),
+    radial-gradient(50% 100% at 100% 0%, color-mix(in srgb, var(--bronze) 12%, transparent), transparent 60%),
+    var(--deeper);
+  border-top:1px solid var(--line);
+}
+.audit{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start}
+.audit-copy{display:grid; gap:20px; min-width:0}
+.audit-copy ul{margin:0; padding:0; list-style:none; display:grid; gap:12px}
+.audit-copy li{display:grid; grid-template-columns:22px 1fr; gap:10px; color:var(--mute)}
+.audit-copy li svg{width:18px; height:18px; color:var(--bronze); margin-top:4px}
+form{display:grid; gap:16px; padding:30px; border-radius:var(--radius); background:var(--deep); border:1px solid var(--line); box-shadow:0 40px 80px -50px var(--shadow)}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.field{display:grid; gap:6px; min-width:0}
+.field label{font-size:.85rem; font-weight:600}
+.field input,.field select{
+  font:inherit; font-size:1rem; color:var(--parch); background:var(--sea);
+  border:1px solid var(--line); border-radius:10px; padding:.75em .9em; width:100%;
+  transition:border-color .2s, box-shadow .2s;
+}
+.field input:focus,.field select:focus{outline:none; border-color:var(--verdigris); box-shadow:0 0 0 3px var(--verd-soft)}
+form .btn{justify-content:center; width:100%}
+.form-note{font-size:.8rem; color:var(--mute)}
+.form-note.err{color:var(--bronze-hi); font-weight:600}
+.field input[aria-invalid="true"]{border-color:var(--bronze-hi); box-shadow:0 0 0 3px color-mix(in srgb, var(--bronze) 18%, transparent)}
+.sent h3:focus{outline:none}
+.copy-box{display:grid; gap:12px; text-align:left; margin-top:6px}
+.copy-box textarea{font:.88rem/1.5 var(--mono); color:var(--parch); background:var(--sea); border:1px solid var(--line); border-radius:10px; padding:.8em; resize:none; width:100%}
+.copy-actions{display:flex; flex-wrap:wrap; gap:10px}
+.copy-actions .btn{flex:1 1 160px; justify-content:center; width:auto}
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+.sent{display:none; gap:10px; text-align:center; padding:12px 0}
+form.done .sent{display:grid}
+form.done > :not(.sent){display:none}
+.sent svg{width:44px; height:44px; color:var(--verdigris); justify-self:center}
+.sent h3{font-size:var(--step-2)}
+.sent p{color:var(--mute)}
+
+footer{border-top:1px solid var(--line)}
+footer .wrap{display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; padding-block:30px; color:var(--mute); font-size:.88rem}
+footer .brand{font-size:1.1rem; color:var(--parch)}
+footer .brand svg{width:22px; height:22px}
+
+/* line up the parts of sibling cards (headings, threads, feature lists, buttons) */
+@supports (grid-template-rows: subgrid){
+  @media (min-width: 961px){
+    .gear-card{grid-row:span 4; grid-template-rows:subgrid}
+    .gear-card .thread{align-self:end}
+    .tier{grid-row:span 6; grid-template-rows:subgrid}
+  }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 960px){
+  .hero .wrap{grid-template-columns:1fr; padding-block:40px 56px}
+  .machine{max-width:520px}
+  .ticket{left:0}
+  .leak,.story,.audit{grid-template-columns:1fr}
+  .gears,.tiers{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr; row-gap:36px}
+  .steps::before{display:none}
+  .nav-links a:not(.btn){display:none}
+  .plate{padding-block:72px}
+}
+@media (max-width: 560px){
+  body{font-size:16px}
+  .steps{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr}
+  .readout-rows{grid-template-columns:1fr 1fr 1fr}
+  .readout,.controls,form,.tier,.gear-card{padding:22px}
+  .ticket{position:relative; left:auto; bottom:auto; width:100%; margin-top:-18%}
+  .machine{aspect-ratio:auto}
+  .machine canvas{position:relative; inset:auto; width:118%; margin-left:-9%; aspect-ratio:1/1; height:auto; display:block}
+  .facts{grid-template-columns:1fr}
+  .nav .btn{font-size:.82rem; padding:.7em 1em}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important; transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<!-- shared icon defs -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-gear" viewBox="0 0 48 48"><path fill="currentColor" fill-rule="evenodd" d="M27.2 2.4 28.6 8a16.6 16.6 0 0 1 4.6 1.9l5-3 4 4-3 5a16.6 16.6 0 0 1 1.9 4.6l5.6 1.4v5.6l-5.6 1.4a16.6 16.6 0 0 1-1.9 4.6l3 5-4 4-5-3a16.6 16.6 0 0 1-4.6 1.9l-1.4 5.6h-5.6L20 40a16.6 16.6 0 0 1-4.6-1.9l-5 3-4-4 3-5A16.6 16.6 0 0 1 7.5 27.5L1.9 26.1v-5.6l5.6-1.4a16.6 16.6 0 0 1 1.9-4.6l-3-5 4-4 5 3A16.6 16.6 0 0 1 20 6.6l1.4-4.2ZM24 14.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19Zm0 6a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m3 8.5 3.2 3L13 4.5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 8h10M9 4l4 4-4 4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6L12 3Z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="m8.8 12 2.2 2.2 4.4-4.6"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="16" cy="16" r="10.5"/><circle cx="16" cy="16" r="4"/><path d="M16 1.8v4M16 26.2v4M1.8 16h4M26.2 16h4M6 6l2.8 2.8M23.2 23.2 26 26M6 26l2.8-2.8M23.2 8.8 26 6"/><path d="M16 12V5.5" stroke-linecap="round"/></g><circle cx="16" cy="16" r="1.6" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Kytherly home"><svg><use href="#i-mark"/></svg>Kytherly</a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#name">The name</a>
+      <a class="btn btn-primary" href="#audit">Free missed-call audit</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="label">Front-desk automation for the trades</p>
+        <h1>Your front desk, running like <em>clockwork.</em></h1>
+        <p class="lede">Kytherly builds the quiet machinery behind plumbers, HVAC techs, electricians and roofers. A missed call gets a text back in seconds. A web lead gets an answer before the next shop calls back. A finished job turns into a review.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#audit">Get your free missed-call audit <svg><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero-meta">
+          <span>Keeps the number you already have</span>
+          <span>One app to answer texts</span>
+          <span>Built in Colorado</span>
+        </div>
+      </div>
+
+      <div class="machine" aria-label="An animated bronze gear train, turning">
+        <canvas id="mech"></canvas>
+        <div class="ticket" aria-live="polite">
+          <div class="ticket-head"><span>Example · Peak Plumbing</span><b id="clock">2:14 PM</b></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LEAK ================= -->
+  <section class="plate" id="leak">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label">The leak</p>
+        <h2>What does a missed call cost you?</h2>
+        <p class="lede">When a caller hits voicemail, most of them just call the next company on Google. Move the sliders to match your shop.</p>
+      </div>
+      <div class="leak">
+        <div class="controls">
+          <div class="ctrl">
+            <div class="ctrl-top"><label for="calls">Missed calls a week</label><output id="callsOut" for="calls">6</output></div>
+            <input type="range" id="calls" min="1" max="40" value="6">
+            <small>After hours, on a roof, under a sink. They add up.</small>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-top"><label for="ticket">Average job</label><output id="ticketOut" for="ticket">$450</output></div>
+            <input type="range" id="ticket" min="100" max="5000" step="50" value="450">
+            <small>A drain clear, a furnace repair, a panel swap.</small>
+          </div>
+          <div class="ctrl">
+            <div class="ctrl-top"><label for="rate">Callers who would have booked</label><output id="rateOut" for="rate">40%</output></div>
+            <input type="range" id="rate" min="5" max="90" step="5" value="40">
+            <small>Your usual booking rate when you do pick up.</small>
+          </div>
+        </div>
+        <div class="readout">
+          <canvas id="dialMini" aria-hidden="true"></canvas>
+          <p class="label">Walking out the door each month</p>
+          <div class="big" id="leakOut">$4,680<small>/ month</small></div>
+          <dl class="readout-rows">
+            <div><dt>Calls / mo</dt><dd id="r1">26</dd></div>
+            <div><dt>Lost jobs</dt><dd id="r2">10.4</dd></div>
+            <div><dt>Per year</dt><dd id="r3">$56k</dd></div>
+          </dl>
+          <p class="fine">An estimate from the numbers you entered, not a promise. Once you're live, your monthly report tracks the real figure: bookings times your average job.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= THREE GEARS ================= -->
+  <section class="plate" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label">The mechanism</p>
+        <h2>Three gears that keep every customer turning toward a booked job.</h2>
+        <p class="lede">Each one runs on its own the moment something happens. You keep working. Customers hear back right away.</p>
+      </div>
+      <div class="gears">
+        <article class="gear-card">
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When you can't pick up</span></div>
+          <h3>Missed-call text-back</h3>
+          <p>Every unanswered call gets a friendly text from your business number within seconds, so the caller has a reason to wait for you instead of dialing someone else.</p>
+          <div class="thread" aria-label="Example text thread">
+            <span class="b o">Hi, this is Sam from Peak Plumbing. Sorry we missed your call, we're probably on a job. How can we help? Reply STOP to opt out.</span>
+            <span class="b i">Water heater is leaking in the garage</span>
+          </div>
+        </article>
+        <article class="gear-card">
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When a lead comes in</span></div>
+          <h3>Instant lead reply</h3>
+          <p>Website form and chat leads get a text and email with your booking link right away, and you get an alert. No reply in an hour? One polite follow-up goes out.</p>
+          <div class="thread" aria-label="Example text thread">
+            <span class="b o">Thanks for reaching out about your AC. Is it not cooling at all, or just weak?</span>
+            <span class="b i">Not at all. House is 84°</span>
+          </div>
+        </article>
+        <article class="gear-card">
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When the job is done</span></div>
+          <h3>Review requests</h3>
+          <p>When the job is marked done, every customer gets the same short thank-you with a one-tap link to your Google review page. No gating, no gift cards, just a steady climb.</p>
+          <div class="thread" aria-label="Example text thread">
+            <span class="b o">Thanks for having us out today, Dana! Mind leaving a quick review?</span>
+            <span class="b i">Done ⭐⭐⭐⭐⭐</span>
+          </div>
+        </article>
+      </div>
+      <p class="compliance"><svg><use href="#i-shield"/></svg><span>Every text goes out from a registered business number under TCPA and A2P 10DLC rules. STOP and HELP work on every message, nothing is sent before 8 a.m. or after 9 p.m. in your customer's time zone, and we only text people who contacted you first. You approve every message before launch.</span></p>
+    </div>
+  </section>
+
+  <!-- ================= PROCESS ================= -->
+  <section class="plate" id="process">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label">Getting started</p>
+        <h2>From first call to running on its own.</h2>
+      </div>
+      <ol class="steps" style="list-style:none;margin:0;padding:0">
+        <li class="step"><span class="n">1</span><span class="dur">Free</span><h3>Missed-call audit</h3><p>We call your shop during and after hours, fill out your web form, and time how long each one takes to get a reply.</p></li>
+        <li class="step"><span class="n">2</span><span class="dur">20 minutes</span><h3>Walkthrough call</h3><p>We go over what we found and pick the gears that fit your shop. Plain talk, no pitch deck.</p></li>
+        <li class="step"><span class="n">3</span><span class="dur">Live in 7–14 days</span><h3>Launch</h3><p>We forward your missed calls, write every message in your voice, register your texting, and test each path with you before it goes live.</p></li>
+        <li class="step"><span class="n">4</span><span class="dur">Every month</span><h3>Report</h3><p>One page: missed calls caught, replies, bookings, new reviews, and estimated recovered revenue, each against last month.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section class="plate" id="pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="label">Pricing</p>
+        <h2>Start with one gear. Add the rest when it pays for itself.</h2>
+      </div>
+      <div class="tiers">
+        <article class="tier">
+          <div class="tier-name"><h3>Starter</h3></div>
+          <div class="price"><span>from</span><b>$197</b><span>/ month</span></div>
+          <p class="setup">Setup from $300</p>
+          <p>Never Miss a Customer. The three gears, running on your number.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg>Missed-call text-back</li>
+            <li><svg><use href="#i-check"/></svg>Instant reply to website leads</li>
+            <li><svg><use href="#i-check"/></svg>Google review requests</li>
+            <li><svg><use href="#i-check"/></svg>Shared inbox app for every text</li>
+            <li><svg><use href="#i-check"/></svg>Monthly report</li>
+          </ul>
+          <a class="btn btn-ghost" href="#audit">Start with an audit</a>
+        </article>
+        <article class="tier feature">
+          <div class="tier-name"><h3>Growth</h3><span class="pill">Most shops</span></div>
+          <div class="price"><span>from</span><b>$297</b><span>/ month</span></div>
+          <p class="setup">Setup from $500</p>
+          <p>Everything in Starter, plus the follow-through that turns quotes into jobs.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg>Appointment reminders</li>
+            <li><svg><use href="#i-check"/></svg>Quote follow-up</li>
+            <li><svg><use href="#i-check"/></svg>Website chat assistant</li>
+          </ul>
+          <a class="btn btn-primary" href="#audit">Get my audit</a>
+        </article>
+        <article class="tier">
+          <div class="tier-name"><h3>Full Front Desk</h3></div>
+          <div class="price"><span>from</span><b>$497</b><span>/ month</span></div>
+          <p class="setup">Setup from $1,000 · voice minutes over the included amount at cost</p>
+          <p>Everything in Growth, plus a receptionist that picks up when you can't.</p>
+          <ul>
+            <li><svg><use href="#i-check"/></svg>AI receptionist for after-hours and overflow</li>
+            <li><svg><use href="#i-check"/></svg>Call summaries sent to your CRM</li>
+            <li><svg><use href="#i-check"/></svg>Weekly owner summary</li>
+            <li><svg><use href="#i-check"/></svg>A real person on every handoff</li>
+          </ul>
+          <a class="btn btn-ghost" href="#audit">Talk it through</a>
+        </article>
+      </div>
+      <div class="guarantee">
+        <svg><use href="#i-shield"/></svg>
+        <div><strong>The 60-second guarantee</strong><p>If the system doesn't text back your missed callers within 60 seconds, 24/7, you don't pay that month. We guarantee the part we control: the machinery works.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NAME ================= -->
+  <section class="plate" id="name">
+    <div class="wrap story">
+      <div class="story-copy">
+        <p class="label">Why Kytherly</p>
+        <h2>Named for the oldest known machine with gears.</h2>
+        <p>In 1901, sponge divers pulled a lump of corroded bronze from a shipwreck off the Greek island of Antikythera. Inside were dozens of interlocking gears, built more than 2,000 years ago to track the sun, the moon and the coming eclipses.</p>
+        <p class="pull">Small, precise parts, working together, so people could stop worrying about what came next.</p>
+        <p>That is what we build for a trade business. You do the work. The mechanism keeps time.</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>1901</b><span>Found by sponge divers off Antikythera</span></div>
+        <div class="fact"><b>2,000+</b><span>Years old, give or take a century</span></div>
+        <div class="fact"><b>30</b><span>Hand-cut bronze gears survive</span></div>
+        <div class="fact"><b>82</b><span>Fragments recovered from the wreck</span></div>
+        <div class="fact wide"><canvas id="saros" aria-hidden="true"></canvas><div style="display:grid;gap:4px"><b>223</b><span>Lunar months on its Saros dial, the cycle it used to predict eclipses</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= AUDIT ================= -->
+  <section class="cta-band" id="audit">
+    <div class="wrap plate audit">
+      <div class="audit-copy">
+        <p class="label">Free missed-call audit</p>
+        <h2>Find out how many customers are calling someone else.</h2>
+        <p class="lede">Tell us about your shop. We'll call it like a customer would, during and after hours, and send back what we found. No obligation, no sales texts.</p>
+        <ul>
+          <li><svg><use href="#i-check"/></svg>What happens when you miss a call, day and night</li>
+          <li><svg><use href="#i-check"/></svg>How fast leads hear back today</li>
+          <li><svg><use href="#i-check"/></svg>Your review count against the shops near you</li>
+        </ul>
+      </div>
+      <form id="auditForm" novalidate>
+        <input type="hidden" name="_subject" value="Missed-call audit request from kytherly.com">
+        <div class="row2">
+          <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required placeholder="Jordan Reyes"></div>
+          <div class="field"><label for="f-biz">Business</label><input id="f-biz" name="biz" autocomplete="organization" required placeholder="Reyes Heating &amp; Air"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="f-trade">Trade</label>
+            <select id="f-trade" name="trade">
+              <option>Plumbing</option><option>HVAC</option><option>Electrical</option><option>Roofing</option><option>Garage doors</option><option>Landscaping</option><option>Other home service</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(720) 555-0148"></div>
+        </div>
+        <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesair.com"></div>
+        <button class="btn btn-primary" type="submit">Request my free audit <svg><use href="#i-arrow"/></svg></button>
+        <p class="form-note" id="formNote" aria-live="polite">We'll reach out within one business day. No spam, no automated sales texts.</p>
+        <div class="sent">
+          <svg aria-hidden="true"><use href="#i-check"/></svg>
+          <h3 id="sentTitle" tabindex="-1">Your request is ready</h3>
+          <p id="sentBody">This preview isn't connected to an inbox yet, so nothing has been sent. Copy your request below to send it once Kytherly's contact address is live.</p>
+          <div id="copyBox" class="copy-box">
+            <label for="copyText" class="sr-only">Your audit request</label>
+            <textarea id="copyText" rows="4" readonly></textarea>
+            <div class="copy-actions">
+              <button type="button" class="btn btn-primary" id="copyBtn">Copy request</button>
+              <button type="button" class="btn btn-ghost" id="editBtn">Edit and try again</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><svg><use href="#i-mark"/></svg>Kytherly</a>
+    <span>Front-desk automation for home-service trades · Colorado</span>
+    <span>kytherly.com · © 2026</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = () => getComputedStyle(document.documentElement);
+  let C = {};
+  const readColors = () => { const s = css(); C = {
+    sea: s.getPropertyValue('--sea').trim(), bronze: s.getPropertyValue('--bronze').trim(),
+    hi: s.getPropertyValue('--bronze-hi').trim(), lo: s.getPropertyValue('--bronze-lo').trim(),
+    verd: s.getPropertyValue('--verdigris').trim(), parch: s.getPropertyValue('--parch').trim(),
+    line: s.getPropertyValue('--line').trim(), mute: s.getPropertyValue('--mute').trim() }; };
+  readColors();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+  new MutationObserver(readColors).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+  /* ---------- gear geometry ---------- */
+  // Teeth are centred on angle a0 + k*pitch so meshing phases can be solved exactly.
+  function gearPath(ctx, x, y, T, m, phi, spokes) {
+    const r = T*m/2, ra = r + m*0.95, rd = r - m*1.2, p = Math.PI*2/T;
+    ctx.beginPath();
+    for (let k = 0; k < T; k++) {
+      const a = phi + k*p;
+      const pts = [[rd,a-0.5*p],[rd,a-0.3*p],[ra,a-0.13*p],[ra,a+0.13*p],[rd,a+0.3*p]];
+      pts.forEach(([rr,aa],i)=>{ const px=x+rr*Math.cos(aa), py=y+rr*Math.sin(aa); (k===0&&i===0)?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+    }
+    ctx.closePath();
+    // spoke windows (annular sectors), filled even-odd so the gears behind show through
+    if (spokes && T > 26) {
+      // straight spokes of constant width: the window's angular inset shrinks with radius
+      const ro = rd - m*1.6, ri = Math.max(r*0.28, m*3.4), hw = m*1.1;
+      const wo = Math.asin(hw/ro), wi = Math.asin(Math.min(hw/ri, 0.9));
+      for (let s = 0; s < spokes; s++) {
+        const a = phi + s*2*Math.PI/spokes, b = a + 2*Math.PI/spokes;
+        ctx.moveTo(x+ro*Math.cos(a+wo), y+ro*Math.sin(a+wo));
+        ctx.arc(x,y,ro,a+wo,b-wo);
+        ctx.arc(x,y,ri,b-wi,a+wi,true); ctx.closePath();
+      }
+    }
+    // axle hole
+    const ah = Math.max(m*1.4, 3);
+    ctx.moveTo(x+ah, y); ctx.arc(x,y,ah,0,Math.PI*2,true);
+  }
+
+  function drawGear(ctx, g, m, layer) {
+    const r = g.T*m/2;
+    const grad = ctx.createRadialGradient(g.x - r*0.4, g.y - r*0.5, r*0.1, g.x, g.y, r*1.15);
+    grad.addColorStop(0, layer ? C.hi : C.bronze);
+    grad.addColorStop(0.55, layer ? C.bronze : C.lo);
+    grad.addColorStop(1, C.lo);
+    gearPath(ctx, g.x, g.y, g.T, m, g.phi, g.spokes);
+    ctx.globalAlpha = layer ? 1 : 0.72;
+    ctx.fillStyle = grad; ctx.fill('evenodd');
+    ctx.lineWidth = Math.max(1, m*0.22); ctx.strokeStyle = C.lo; ctx.stroke();
+    // verdigris patina on the rim
+    ctx.globalAlpha = layer ? 0.18 : 0.12; ctx.strokeStyle = C.verd; ctx.lineWidth = m*0.9;
+    ctx.beginPath(); ctx.arc(g.x, g.y, r - m*1.6, 0, Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Train definition: mesh with parent at angle th, or sit coaxially on it.
+  const TRAIN = [
+    {id:0, T:96, spokes:4, layer:0},
+    {id:1, T:24, co:0, layer:1, spokes:0},
+    {id:2, T:64, mesh:1, th:-0.35, layer:1, spokes:5},
+    {id:3, T:18, co:2, layer:1},
+    {id:4, T:40, mesh:3, th:1.25, layer:1, spokes:4},
+    {id:5, T:38, mesh:0, th:2.55, layer:0, spokes:4},
+    {id:6, T:30, mesh:0, th:1.55, layer:0, spokes:4},
+    {id:7, T:22, mesh:2, th:-1.6, layer:1},
+    {id:8, T:52, mesh:5, th:3.6, layer:0, spokes:5},
+  ];
+
+  function mechanism(canvas, opts={}) {
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dpr = 1, m = 3, cx = 0, cy = 0;
+    const gears = TRAIN.map(g => ({...g}));
+    let base = 0, speed = opts.speed || 0.0016, kick = 0;
+    function layout() {
+      const r = canvas.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 2);
+      W = r.width; H = r.height; canvas.width = W*dpr; canvas.height = H*dpr;
+      m = W / (opts.scale || 150); cx = W*(opts.cx ?? 0.56); cy = H*(opts.cy ?? 0.46);
+    }
+    function solve() {
+      const g0 = gears[0]; g0.x = cx; g0.y = cy; g0.phi = base; g0.w = 1;
+      for (const g of gears.slice(1)) {
+        if (g.co !== undefined) { const p = gears[g.co]; g.x=p.x; g.y=p.y; g.w=p.w; g.phi=p.phi*1 + 0.3; continue; }
+        const p = gears[g.mesh], d = (p.T + g.T)*m/2;
+        g.x = p.x + d*Math.cos(g.th); g.y = p.y + d*Math.sin(g.th);
+        g.w = -p.w * p.T/g.T;
+        // pinion tooth at th meets a gap of g at th+pi
+        g.phi = -(p.T/g.T)*p.phi + g.th*(1 + p.T/g.T) + Math.PI - Math.PI/g.T;
+      }
+    }
+    function dial(ctx) {
+      const g0 = gears[0], R = g0.T*m/2 + m*5;
+      ctx.save(); ctx.translate(g0.x, g0.y);
+      ctx.strokeStyle = C.parch; ctx.globalAlpha = .28; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,R+m*4.2,0,Math.PI*2); ctx.stroke();
+      // 223 marks: the Saros dial
+      for (let i = 0; i < 223; i++) {
+        const a = i/223*Math.PI*2 - Math.PI/2, long = i%10===0;
+        ctx.globalAlpha = long ? .55 : .25;
+        ctx.beginPath(); ctx.moveTo(Math.cos(a)*(R+m*0.6), Math.sin(a)*(R+m*0.6));
+        ctx.lineTo(Math.cos(a)*(R+m*(long?3.4:1.8)), Math.sin(a)*(R+m*(long?3.4:1.8))); ctx.stroke();
+      }
+      // pointer
+      const pa = base*0.25 - Math.PI/2;
+      ctx.globalAlpha = .9; ctx.strokeStyle = C.verd; ctx.lineWidth = Math.max(1.5, m*0.5); ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(-Math.cos(pa)*m*6, -Math.sin(pa)*m*6); ctx.lineTo(Math.cos(pa)*(R+m*3.6), Math.sin(pa)*(R+m*3.6)); ctx.stroke();
+      ctx.fillStyle = C.verd; ctx.beginPath(); ctx.arc(Math.cos(pa)*(R+m*3.6), Math.sin(pa)*(R+m*3.6), m*0.9, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = C.parch; ctx.beginPath(); ctx.arc(0,0,m*1.5,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    function frame() {
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+      solve();
+      const order = [...gears].sort((a,b)=>a.layer-b.layer || b.T-a.T);
+      for (const g of order) drawGear(ctx, g, m, g.layer);
+      if (opts.dial !== false) dial(ctx);
+    }
+    let raf;
+    function loop() {
+      kick *= 0.96;
+      base += speed * (1 + kick*9);
+      frame(); raf = requestAnimationFrame(loop);
+    }
+    layout(); frame();
+    new ResizeObserver(() => { layout(); frame(); }).observe(canvas);
+    const io = new IntersectionObserver(([e]) => {
+      if (reduce) return;
+      cancelAnimationFrame(raf); if (e.isIntersecting) loop();
+    });
+    io.observe(canvas);
+    return { kick(){ kick = 1; }, redraw: frame };
+  }
+
+  const hero = mechanism(document.getElementById('mech'), {scale:190, cx:0.6, cy:0.47});
+  mechanism(document.getElementById('dialMini'), {scale:110, cx:0.5, cy:0.5, dial:false, speed:0.001});
+
+  /* ---------- saros dial in facts ---------- */
+  (function saros(){
+    const c = document.getElementById('saros'), x = c.getContext('2d');
+    function draw(t){
+      const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio||1,2);
+      c.width = r.width*d; c.height = r.height*d; x.setTransform(d,0,0,d,0,0);
+      const s = r.width/2; x.clearRect(0,0,r.width,r.height); x.translate(s,s);
+      x.strokeStyle = C.bronze; x.lineWidth = 1;
+      // the Saros dial is a spiral of four turns
+      x.beginPath();
+      for (let i=0;i<=223;i++){ const a=i/223*Math.PI*8 - Math.PI/2, rr = s*0.35 + i/223*s*0.6; const px=Math.cos(a)*rr, py=Math.sin(a)*rr; i?x.lineTo(px,py):x.moveTo(px,py); }
+      x.globalAlpha=.8; x.stroke();
+      const k = Math.floor(t)%224, a=k/223*Math.PI*8 - Math.PI/2, rr = s*0.35 + k/223*s*0.6;
+      x.fillStyle = C.verd; x.globalAlpha=1; x.beginPath(); x.arc(Math.cos(a)*rr, Math.sin(a)*rr, 3.2, 0, Math.PI*2); x.fill();
+      x.strokeStyle = C.verd; x.globalAlpha=.6; x.beginPath(); x.moveTo(0,0); x.lineTo(Math.cos(a)*rr, Math.sin(a)*rr); x.stroke();
+    }
+    let t = 120; draw(t);
+    if (!reduce) setInterval(()=>{ t += 1; draw(t); }, 90);
+  })();
+
+  /* ---------- example conversation ---------- */
+  const SCRIPT = [
+    {t:'2:14:02', k:'sys', h:'<strong>Missed call</strong> · (720) 555-0148', clock:'2:14 PM', kick:1},
+    {t:'2:14:09', k:'out', h:'Hi, this is Sam from Peak Plumbing. Sorry we missed your call, we&rsquo;re probably on a job. How can we help?', kick:1},
+    {t:'2:15:31', k:'in',  h:'Water heater is leaking in the garage'},
+    {t:'2:15:38', k:'out', h:'Sorry to hear that! Grab any open time here: peakplumbing.co/book', kick:1},
+    {t:'2:16:40', k:'in',  h:'Done, tomorrow at 9'},
+    {t:'2:16:41', k:'win', h:'Booked · Thu 9 AM · Sam alerted', kick:1},
+  ];
+  const log = document.getElementById('log');
+  function render(n){
+    log.innerHTML = SCRIPT.slice(0,n).map(e=>`<div class="ev ${e.k}"><time>${e.t.slice(0,4)}</time><div class="bubble">${e.h}</div></div>`).join('');
+  }
+  if (reduce) render(SCRIPT.length);
+  else {
+    let i = 0;
+    (function step(){
+      if (i < SCRIPT.length){ const e = SCRIPT[i]; i++; render(i); if (e.kick) hero.kick(); setTimeout(step, i===1?900:1500); }
+      else { setTimeout(()=>{ i = 0; render(0); step(); }, 5200); }
+    })();
+    render(1);
+  }
+
+  /* ---------- leak calculator ---------- */
+  const $ = id => document.getElementById(id);
+  const money = n => '$' + Math.round(n).toLocaleString('en-US');
+  const short = n => n >= 1e6 ? '$'+(n/1e6).toFixed(1)+'M' : '$'+Math.round(n/1000)+'k';
+  let shown = 0, target = 0, anim;
+  function tween(){
+    shown += (target - shown)*0.18;
+    if (Math.abs(target-shown) < 1) shown = target;
+    $('leakOut').firstChild.nodeValue = money(Math.round(shown/10)*10);
+    if (shown !== target) anim = requestAnimationFrame(tween);
+  }
+  function calc(){
+    const calls = +$('calls').value, job = +$('ticket').value, rate = +$('rate').value/100;
+    const perMonth = calls * 52/12, lost = perMonth*rate, val = lost*job;
+    $('callsOut').textContent = calls; $('ticketOut').textContent = money(job); $('rateOut').textContent = Math.round(rate*100)+'%';
+    $('r1').textContent = Math.round(perMonth); $('r2').textContent = lost.toFixed(1); $('r3').textContent = short(val*12);
+    for (const el of document.querySelectorAll('input[type=range]')) el.style.setProperty('--p', ((el.value-el.min)/(el.max-el.min)*100)+'%');
+    target = val; cancelAnimationFrame(anim);
+    if (reduce) { shown = target; $('leakOut').firstChild.nodeValue = money(Math.round(val/10)*10); } else tween();
+  }
+  ['calls','ticket','rate'].forEach(id => $(id).addEventListener('input', calc));
+  shown = 6*52/12*0.4*450; calc();
+
+  /* ---------- audit form ----------
+     AUDIT_ENDPOINT: set to a form service URL (Formspree, Basin, your own API) to send requests.
+     While it is empty the page is a preview: it builds the request and lets the visitor copy it. */
+  const AUDIT_ENDPOINT = 'https://formspree.io/f/mrpeoeaj';
+  const form = $('auditForm'), note = $('formNote'), noteDefault = note.textContent;
+  const valid = i => {
+    const v = i.value.trim();
+    if (!v) return false;
+    if (i.type === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    if (i.type === 'tel') return v.replace(/\D/g, '').length >= 10 && !/[a-z]/i.test(v);
+    return true;
+  };
+  form.querySelectorAll('[required]').forEach(i => i.addEventListener('input', () => {
+    if (i.getAttribute('aria-invalid') === 'true' && valid(i)) {
+      i.removeAttribute('aria-invalid'); i.removeAttribute('aria-describedby');
+      if (!form.querySelector('[aria-invalid="true"]')) { note.textContent = noteDefault; note.classList.remove('err'); }
+    }
+  }));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fields = [...form.querySelectorAll('[required]')];
+    fields.forEach(i => { i.removeAttribute('aria-invalid'); i.removeAttribute('aria-describedby'); });
+    const bad = fields.find(i => !valid(i));
+    if (bad){
+      const what = bad.previousElementSibling.textContent.toLowerCase().replace(/^your /, '');
+      note.textContent = bad.value.trim()
+        ? `That ${what} doesn't look right. Check it and try again.`
+        : `Add your ${what} so we know who the audit is for.`;
+      note.classList.add('err');
+      bad.setAttribute('aria-invalid', 'true'); bad.setAttribute('aria-describedby', 'formNote');
+      bad.focus(); return;
+    }
+    const d = Object.fromEntries(new FormData(form));
+    if (AUDIT_ENDPOINT) {
+      const btn = form.querySelector('[type=submit]'); btn.disabled = true;
+      try {
+        const r = await fetch(AUDIT_ENDPOINT, { method:'POST', headers:{'Accept':'application/json'}, body:new FormData(form) });
+        if (!r.ok) throw new Error(r.status);
+        $('sentTitle').textContent = 'Request sent';
+        $('sentBody').textContent = `Thanks, ${d.name.split(' ')[0]}. We'll be in touch within one business day.`;
+        $('copyBox').hidden = true; form.classList.add('done'); $('sentTitle').focus();
+      } catch {
+        $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+        $('sentTitle').textContent = 'We couldn’t send that';
+        $('sentBody').textContent = 'Your connection or browser blocked the request, so nothing was sent. Try again in a moment, or copy your request below and send it to us directly.';
+        $('copyBox').hidden = false; form.classList.add('done'); $('sentTitle').focus();
+      } finally { btn.disabled = false; }
+      return;
+    }
+    $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+    form.classList.add('done'); $('sentTitle').focus();
+  });
+  $('copyBtn').addEventListener('click', async () => {
+    const t = $('copyText');
+    try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copied'; }
+    catch { t.focus(); t.select(); $('copyBtn').textContent = 'Press Ctrl+C to copy'; }
+  });
+  $('editBtn').addEventListener('click', () => { form.classList.remove('done'); $('f-name').focus(); });
+})();
+</script>
+</body>
+</html>
