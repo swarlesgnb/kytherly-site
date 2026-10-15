@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kytherly</title>
-<meta name="description" content="Kytherly builds front-desk automation for home-service trades: missed-call text-back, instant lead replies and review requests.">
+<meta name="description" content="Kytherly texts back the calls you miss, answers new web leads right away and asks finished jobs for Google reviews. For plumbers, HVAC, electricians and roofers.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23c8904f' stroke-width='2.4'%3E%3Ccircle cx='16' cy='16' r='10'/%3E%3Ccircle cx='16' cy='16' r='4'/%3E%3Cpath d='M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M6 26l3-3M23 9l3-3'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: a salvaged bronze mechanism on a deep-sea ground. Hero splits text / live gear train;
    sections run as plates on one center column, each with a mono "inscription" label. Dark-first. */
@@ -28,8 +28,9 @@
   --shadow:rgba(0,0,0,.45);
   --display:"Marcellus","Trajan Pro","Palatino Linotype",Georgia,serif;
   --body:"Hanken Grotesk","Segoe UI",system-ui,-apple-system,sans-serif;
+  --hand:"Caveat","Segoe Print","Bradley Hand",cursive;
   --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  --step-0:1rem; --step-1:1.2rem; --step-2:1.6rem; --step-3:2.4rem; --step-4:clamp(2.6rem,6.2vw,5.2rem);
+  --step-0:1rem; --step-1:1.2rem; --step-2:1.6rem; --step-3:2.4rem; --step-4:clamp(2.5rem,5.4vw,4.6rem);
   --radius:14px;
   color-scheme:dark;
 }
@@ -148,7 +149,7 @@ p{margin:0}
 .log{display:grid; gap:8px; min-height:188px; align-content:start}
 .ev{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start;
   animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
-.ev time{font-family:var(--mono); font-size:.72rem; color:var(--mute); padding-top:2px; font-variant-numeric:tabular-nums}
+.ev time{font-family:var(--mono); font-size:.72rem; color:var(--mute); padding-top:2px; font-variant-numeric:tabular-nums; min-width:2.6em}
 .ev .bubble{padding:7px 10px; border-radius:12px; line-height:1.4; min-width:0}
 .ev.sys .bubble{padding:2px 0; color:var(--mute)}
 .ev.sys .bubble strong{color:var(--parch); font-weight:600}
@@ -310,6 +311,79 @@ footer .wrap{display:flex; flex-wrap:wrap; justify-content:space-between; gap:16
 footer .brand{font-size:1.1rem; color:var(--parch)}
 footer .brand svg{width:22px; height:22px}
 
+/* ---------- small delights: margin notes, toggles, toasts ---------- */
+::selection{background:color-mix(in srgb, var(--bronze) 45%, transparent); color:var(--parch)}
+.hero-note{color:var(--mute); font-size:.95rem; max-width:50ch}
+.spin-hint{
+  position:absolute; z-index:3; top:2%; left:4%; margin:0; display:flex; align-items:flex-end; gap:4px;
+  font-family:var(--hand); font-size:1.4rem; line-height:1; color:var(--bronze-hi);
+  transform:rotate(-5deg); pointer-events:none; transition:opacity .6s;
+}
+.spin-hint svg{width:38px; height:24px; transform:translateY(12px)}
+.spin-hint.gone{opacity:0}
+#mech{cursor:grab; touch-action:pan-y}
+#mech.grabbing{cursor:grabbing}
+.ticket-head i{font-style:normal; text-transform:none; letter-spacing:0; opacity:.75}
+.ev.typing .bubble{display:inline-flex; gap:4px; padding:10px 12px; width:max-content}
+.ev.typing .bubble i{width:6px; height:6px; border-radius:50%; background:var(--mute); animation:blink 1s infinite}
+.ev.typing .bubble i:nth-child(2){animation-delay:.15s}
+.ev.typing .bubble i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,60%,100%{opacity:.25; transform:none}30%{opacity:1; transform:translateY(-2px)}}
+.quip{font-family:var(--hand); font-size:1.55rem; line-height:1.15; color:var(--bronze-hi); margin-top:-10px; transform:rotate(-1.5deg); transform-origin:left center}
+.quip.swap{animation:quip .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes quip{from{opacity:0; transform:rotate(-1.5deg) translateY(6px)}}
+.stars{display:inline-flex; gap:1px; margin-left:4px; color:var(--bronze-hi)}
+.stars i{font-style:normal; display:inline-block}
+.gear-card:hover .stars i{animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}
+.gear-card:hover .stars i:nth-child(2){animation-delay:.07s}
+.gear-card:hover .stars i:nth-child(3){animation-delay:.14s}
+.gear-card:hover .stars i:nth-child(4){animation-delay:.21s}
+.gear-card:hover .stars i:nth-child(5){animation-delay:.28s}
+@keyframes pop{40%{transform:scale(1.55) rotate(-14deg)}}
+
+.steps{list-style:none; margin:0; padding:0}
+.step .n{border:0; background:none}
+.step .n .cog{position:absolute; inset:-8px; width:62px; height:62px; color:var(--bronze); opacity:.45; transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.step .n b{position:relative; width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--sea); border:1px solid var(--bronze); font-weight:500}
+.step:hover .n .cog{transform:rotate(90deg)}
+.step:nth-child(even):hover .n .cog{transform:rotate(-90deg)}
+
+.terms{margin-top:20px; color:var(--mute); font-size:.92rem}
+.fact-text{display:grid; gap:4px}
+
+.theme-btn{
+  position:relative; width:38px; height:38px; flex:none; border-radius:50%; border:1px solid var(--line);
+  background:transparent; color:var(--bronze-hi); cursor:pointer; display:grid; place-items:center;
+  transition:border-color .2s, transform .2s;
+}
+.theme-btn:hover{border-color:var(--bronze)}
+.theme-btn:active{transform:scale(.92)}
+.theme-btn svg{position:absolute; width:18px; height:18px; transition:transform .6s cubic-bezier(.2,.8,.2,1), opacity .3s}
+.theme-btn .moon{opacity:0; transform:rotate(-90deg) scale(.5)}
+.theme-btn.is-light .sun{opacity:0; transform:rotate(90deg) scale(.5)}
+.theme-btn.is-light .moon{opacity:1; transform:none}
+
+.local{margin:0}
+.local b{color:var(--parch); font-weight:500; font-variant-numeric:tabular-nums}
+
+.toast{
+  position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom, 0px)); z-index:50;
+  transform:translate(-50%, 20px); opacity:0; pointer-events:none; width:max-content; max-width:calc(100% - 32px);
+  padding:10px 18px; border-radius:14px; background:var(--deep); color:var(--parch);
+  border:1px solid color-mix(in srgb, var(--bronze) 50%, var(--line)); box-shadow:0 20px 50px -20px var(--shadow);
+  font-family:var(--hand); font-size:1.4rem; line-height:1.2; text-align:center;
+  transition:opacity .35s, transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.toast.show{opacity:1; transform:translate(-50%, 0)}
+.burst{position:fixed; width:22px; height:22px; color:var(--bronze-hi); pointer-events:none; z-index:40}
+@media (max-width: 960px){
+  .spin-hint{top:0; left:2%}
+}
+@media (max-width: 560px){
+  .spin-hint{font-size:1.2rem; top:-2%}
+  .nav-links{gap:10px}
+}
+
 /* line up the parts of sibling cards (headings, threads, feature lists, buttons) */
 @supports (grid-template-rows: subgrid){
   @media (min-width: 961px){
@@ -362,255 +436,248 @@ footer .brand svg{width:22px; height:22px}
   </defs>
 </svg>
 
+<script>try{var t=localStorage.getItem("ky-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#top" aria-label="Kytherly home"><svg><use href="#i-mark"/></svg>Kytherly</a>
+    <a class="brand" id="brand" href="#top" aria-label="Kytherly, back to top"><svg><use href="#i-mark"/></svg>Kytherly</a>
     <nav class="nav-links" aria-label="Main">
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#name">The name</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to light mode">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3 7 7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.6A7.6 7.6 0 0 1 9.4 4.5a7.6 7.6 0 1 0 10.1 10.1Z" fill="currentColor"/></svg>
+      </button>
       <a class="btn btn-primary" href="#audit">Free missed-call audit</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
-  <!-- ================= HERO ================= -->
   <section class="hero">
     <div class="wrap">
       <div class="hero-copy">
-        <p class="label">Front-desk automation for the trades</p>
-        <h1>Your front desk, running like <em>clockwork.</em></h1>
-        <p class="lede">Kytherly builds the quiet machinery behind plumbers, HVAC techs, electricians and roofers. A missed call gets a text back in seconds. A web lead gets an answer before the next shop calls back. A finished job turns into a review.</p>
+        <p class="label">For plumbers, HVAC, electricians and roofers</p>
+        <h1>You're under a sink. <em>Your phone is ringing.</em></h1>
+        <p class="lede">Kytherly texts that caller back from your business number within a minute, so they book with you instead of the next shop on Google. New web leads hear back right away too, and finished jobs turn into Google reviews.</p>
         <div class="hero-ctas">
-          <a class="btn btn-primary" href="#audit">Get your free missed-call audit <svg><use href="#i-arrow"/></svg></a>
-          <a class="btn btn-ghost" href="#how">See how it works</a>
+          <a class="btn btn-primary" href="#audit">Get a free missed-call audit <svg><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-ghost" href="#how">How it works</a>
         </div>
-        <div class="hero-meta">
-          <span>Keeps the number you already have</span>
-          <span>One app to answer texts</span>
-          <span>Built in Colorado</span>
-        </div>
+        <p class="hero-note">You keep your current number. I set everything up myself, here in Colorado, and I answer my own phone.</p>
       </div>
 
-      <div class="machine" aria-label="An animated bronze gear train, turning">
-        <canvas id="mech"></canvas>
-        <div class="ticket" aria-live="polite">
-          <div class="ticket-head"><span>Example · Peak Plumbing</span><b id="clock">2:14 PM</b></div>
+      <div class="machine">
+        <canvas id="mech" aria-hidden="true"></canvas>
+        <p class="spin-hint" id="spinHint" aria-hidden="true">go ahead, give it a spin <svg viewBox="0 0 40 24"><path d="M2 4c10 0 22 3 30 14m0 0-1-7m1 7-7-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></p>
+        <div class="ticket" aria-label="Example text conversation">
+          <div class="ticket-head"><span>Peak Plumbing <i>(an example)</i></span><b id="clock">2:14 PM</b></div>
           <div class="log" id="log"></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= LEAK ================= -->
   <section class="plate" id="leak">
     <div class="wrap">
       <div class="sec-head">
-        <p class="label">The leak</p>
-        <h2>What does a missed call cost you?</h2>
-        <p class="lede">When a caller hits voicemail, most of them just call the next company on Google. Move the sliders to match your shop.</p>
+        <h2>What's a missed call worth to you?</h2>
+        <p class="lede">Most people who reach voicemail don't leave a message. They call the next shop. Drag these to match yours.</p>
       </div>
       <div class="leak">
         <div class="controls">
           <div class="ctrl">
             <div class="ctrl-top"><label for="calls">Missed calls a week</label><output id="callsOut" for="calls">6</output></div>
             <input type="range" id="calls" min="1" max="40" value="6">
-            <small>After hours, on a roof, under a sink. They add up.</small>
+            <small>After hours, up on a roof, elbow-deep in a crawlspace.</small>
           </div>
           <div class="ctrl">
-            <div class="ctrl-top"><label for="ticket">Average job</label><output id="ticketOut" for="ticket">$450</output></div>
+            <div class="ctrl-top"><label for="ticket">Your average job</label><output id="ticketOut" for="ticket">$450</output></div>
             <input type="range" id="ticket" min="100" max="5000" step="50" value="450">
-            <small>A drain clear, a furnace repair, a panel swap.</small>
+            <small>Think drain clear, furnace repair, panel swap.</small>
           </div>
           <div class="ctrl">
-            <div class="ctrl-top"><label for="rate">Callers who would have booked</label><output id="rateOut" for="rate">40%</output></div>
+            <div class="ctrl-top"><label for="rate">How many of those would have booked</label><output id="rateOut" for="rate">40%</output></div>
             <input type="range" id="rate" min="5" max="90" step="5" value="40">
             <small>Your usual booking rate when you do pick up.</small>
           </div>
         </div>
         <div class="readout">
           <canvas id="dialMini" aria-hidden="true"></canvas>
-          <p class="label">Walking out the door each month</p>
+          <p class="label">Going to other shops each month</p>
           <div class="big" id="leakOut">$4,680<small>/ month</small></div>
+          <p class="quip" id="quip" aria-live="polite">That's a tech's paycheck going to the other guy.</p>
           <dl class="readout-rows">
             <div><dt>Calls / mo</dt><dd id="r1">26</dd></div>
             <div><dt>Lost jobs</dt><dd id="r2">10.4</dd></div>
             <div><dt>Per year</dt><dd id="r3">$56k</dd></div>
           </dl>
-          <p class="fine">An estimate from the numbers you entered, not a promise. Once you're live, your monthly report tracks the real figure: bookings times your average job.</p>
+          <p class="fine">Rough math from the numbers you picked. Once you're set up, your monthly report shows the real figure.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= THREE GEARS ================= -->
   <section class="plate" id="how">
     <div class="wrap">
       <div class="sec-head">
-        <p class="label">The mechanism</p>
-        <h2>Three gears that keep every customer turning toward a booked job.</h2>
-        <p class="lede">Each one runs on its own the moment something happens. You keep working. Customers hear back right away.</p>
+        <h2>Three things it handles while you work.</h2>
+        <p class="lede">Each one runs on its own. Every conversation lands in one app on your phone, and you can jump in whenever you like.</p>
       </div>
       <div class="gears">
         <article class="gear-card">
-          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When you can't pick up</span></div>
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">You can't pick up</span></div>
           <h3>Missed-call text-back</h3>
-          <p>Every unanswered call gets a friendly text from your business number within seconds, so the caller has a reason to wait for you instead of dialing someone else.</p>
+          <p>Every call you miss gets a text from your business number within a minute. The caller knows you're real and busy, and you find out what they needed before you call back.</p>
           <div class="thread" aria-label="Example text thread">
-            <span class="b o">Hi, this is Sam from Peak Plumbing. Sorry we missed your call, we're probably on a job. How can we help? Reply STOP to opt out.</span>
+            <span class="b o">Hi, this is Sam at Peak Plumbing. Sorry we missed you, we're probably on a job. How can we help? Reply STOP to opt out.</span>
             <span class="b i">Water heater is leaking in the garage</span>
           </div>
         </article>
         <article class="gear-card">
-          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When a lead comes in</span></div>
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">A web lead comes in</span></div>
           <h3>Instant lead reply</h3>
-          <p>Website form and chat leads get a text and email with your booking link right away, and you get an alert. No reply in an hour? One polite follow-up goes out.</p>
+          <p>Form and chat leads get a text and an email with your booking link right away, and you get a heads-up. If they don't answer within an hour, one follow-up goes out. Then it stops.</p>
           <div class="thread" aria-label="Example text thread">
             <span class="b o">Thanks for reaching out about your AC. Is it not cooling at all, or just weak?</span>
             <span class="b i">Not at all. House is 84°</span>
           </div>
         </article>
         <article class="gear-card">
-          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">When the job is done</span></div>
+          <div class="g-top"><svg class="g-ico"><use href="#i-gear"/></svg><span class="when">The job's done</span></div>
           <h3>Review requests</h3>
-          <p>When the job is marked done, every customer gets the same short thank-you with a one-tap link to your Google review page. No gating, no gift cards, just a steady climb.</p>
+          <p>Every customer gets the same short thank-you with a link to your Google reviews. Everybody gets asked, including the grumpy ones. Google doesn't allow asking only the happy ones, and it's the honest way to grow a rating anyway.</p>
           <div class="thread" aria-label="Example text thread">
-            <span class="b o">Thanks for having us out today, Dana! Mind leaving a quick review?</span>
-            <span class="b i">Done ⭐⭐⭐⭐⭐</span>
+            <span class="b o">Thanks for having us out today, Dana! Would you leave us a quick Google review?</span>
+            <span class="b i">Done <span class="stars" aria-label="five stars"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span></span>
           </div>
         </article>
       </div>
-      <p class="compliance"><svg><use href="#i-shield"/></svg><span>Every text goes out from a registered business number under TCPA and A2P 10DLC rules. STOP and HELP work on every message, nothing is sent before 8 a.m. or after 9 p.m. in your customer's time zone, and we only text people who contacted you first. You approve every message before launch.</span></p>
+      <p class="compliance"><svg><use href="#i-shield"/></svg><span>Here's the rules part. Texts go out from a registered business number and follow TCPA and A2P 10DLC rules. STOP always works. A missed-call reply goes out right away, because that person just called you. Follow-ups and review requests wait until between 8 a.m. and 9 p.m. in your customer's time zone. It only texts people who contacted you first, and you approve every message before anything goes live.</span></p>
     </div>
   </section>
 
-  <!-- ================= PROCESS ================= -->
   <section class="plate" id="process">
     <div class="wrap">
       <div class="sec-head">
-        <p class="label">Getting started</p>
-        <h2>From first call to running on its own.</h2>
+        <h2>Getting set up takes four steps.</h2>
       </div>
-      <ol class="steps" style="list-style:none;margin:0;padding:0">
-        <li class="step"><span class="n">1</span><span class="dur">Free</span><h3>Missed-call audit</h3><p>We call your shop during and after hours, fill out your web form, and time how long each one takes to get a reply.</p></li>
-        <li class="step"><span class="n">2</span><span class="dur">20 minutes</span><h3>Walkthrough call</h3><p>We go over what we found and pick the gears that fit your shop. Plain talk, no pitch deck.</p></li>
-        <li class="step"><span class="n">3</span><span class="dur">Live in 7–14 days</span><h3>Launch</h3><p>We forward your missed calls, write every message in your voice, register your texting, and test each path with you before it goes live.</p></li>
-        <li class="step"><span class="n">4</span><span class="dur">Every month</span><h3>Report</h3><p>One page: missed calls caught, replies, bookings, new reviews, and estimated recovered revenue, each against last month.</p></li>
+      <ol class="steps">
+        <li class="step"><span class="n"><svg class="cog" aria-hidden="true"><use href="#i-gear"/></svg><b>1</b></span><span class="dur">Free</span><h3>Missed-call audit</h3><p>I call your shop the way a customer would, once during the day and once after hours. I fill out your web form, time the reply and look at your Google reviews. Then I send you what happened, good or bad.</p></li>
+        <li class="step"><span class="n"><svg class="cog" aria-hidden="true"><use href="#i-gear"/></svg><b>2</b></span><span class="dur">20 minutes</span><h3>A short call</h3><p>We look at the audit together and decide what's worth turning on. If the honest answer is "nothing yet," I'll say so.</p></li>
+        <li class="step"><span class="n"><svg class="cog" aria-hidden="true"><use href="#i-gear"/></svg><b>3</b></span><span class="dur">Usually 1 to 2 weeks</span><h3>Setup</h3><p>I forward your missed calls, write the texts in your voice and register your number with the carriers. Then we test every path together. Software testing is my day job, so I'm picky here.</p></li>
+        <li class="step"><span class="n"><svg class="cog" aria-hidden="true"><use href="#i-gear"/></svg><b>4</b></span><span class="dur">Every month</span><h3>A one-page report</h3><p>Calls caught, replies, bookings, new reviews and estimated revenue, next to last month's numbers. Short enough to read in the truck.</p></li>
       </ol>
     </div>
   </section>
 
-  <!-- ================= PRICING ================= -->
   <section class="plate" id="pricing">
     <div class="wrap">
       <div class="sec-head">
-        <p class="label">Pricing</p>
-        <h2>Start with one gear. Add the rest when it pays for itself.</h2>
+        <h2>Start with the basics. Add more once it's paying for itself.</h2>
       </div>
       <div class="tiers">
         <article class="tier">
           <div class="tier-name"><h3>Starter</h3></div>
           <div class="price"><span>from</span><b>$197</b><span>/ month</span></div>
           <p class="setup">Setup from $300</p>
-          <p>Never Miss a Customer. The three gears, running on your number.</p>
+          <p>The three basics, running on your number.</p>
           <ul>
             <li><svg><use href="#i-check"/></svg>Missed-call text-back</li>
             <li><svg><use href="#i-check"/></svg>Instant reply to website leads</li>
             <li><svg><use href="#i-check"/></svg>Google review requests</li>
-            <li><svg><use href="#i-check"/></svg>Shared inbox app for every text</li>
+            <li><svg><use href="#i-check"/></svg>One inbox app for every text</li>
             <li><svg><use href="#i-check"/></svg>Monthly report</li>
           </ul>
           <a class="btn btn-ghost" href="#audit">Start with an audit</a>
         </article>
         <article class="tier feature">
-          <div class="tier-name"><h3>Growth</h3><span class="pill">Most shops</span></div>
+          <div class="tier-name"><h3>Growth</h3><span class="pill">Recommended</span></div>
           <div class="price"><span>from</span><b>$297</b><span>/ month</span></div>
           <p class="setup">Setup from $500</p>
-          <p>Everything in Starter, plus the follow-through that turns quotes into jobs.</p>
+          <p>Everything in Starter, plus the follow-ups that help quotes turn into booked jobs.</p>
           <ul>
             <li><svg><use href="#i-check"/></svg>Appointment reminders</li>
             <li><svg><use href="#i-check"/></svg>Quote follow-up</li>
             <li><svg><use href="#i-check"/></svg>Website chat assistant</li>
           </ul>
-          <a class="btn btn-primary" href="#audit">Get my audit</a>
+          <a class="btn btn-primary" href="#audit">Get a free audit</a>
         </article>
         <article class="tier">
           <div class="tier-name"><h3>Full Front Desk</h3></div>
           <div class="price"><span>from</span><b>$497</b><span>/ month</span></div>
-          <p class="setup">Setup from $1,000 · voice minutes over the included amount at cost</p>
-          <p>Everything in Growth, plus a receptionist that picks up when you can't.</p>
+          <p class="setup">Setup from $1,000. Extra voice minutes billed at cost.</p>
+          <p>Everything in Growth, plus an AI receptionist for the calls you can't take.</p>
           <ul>
-            <li><svg><use href="#i-check"/></svg>AI receptionist for after-hours and overflow</li>
-            <li><svg><use href="#i-check"/></svg>Call summaries sent to your CRM</li>
-            <li><svg><use href="#i-check"/></svg>Weekly owner summary</li>
-            <li><svg><use href="#i-check"/></svg>A real person on every handoff</li>
+            <li><svg><use href="#i-check"/></svg>AI receptionist for after hours and overflow</li>
+            <li><svg><use href="#i-check"/></svg>Call summaries sent to your CRM or email</li>
+            <li><svg><use href="#i-check"/></svg>Weekly summary sent to you</li>
+            <li><svg><use href="#i-check"/></svg>Callers can ask for a person at any point</li>
           </ul>
-          <a class="btn btn-ghost" href="#audit">Talk it through</a>
+          <a class="btn btn-ghost" href="#audit">Ask me about it</a>
         </article>
       </div>
+      <p class="terms">Final price depends on your call volume. The first three months are a commitment, then it's month to month.</p>
       <div class="guarantee">
         <svg><use href="#i-shield"/></svg>
-        <div><strong>The 60-second guarantee</strong><p>If the system doesn't text back your missed callers within 60 seconds, 24/7, you don't pay that month. We guarantee the part we control: the machinery works.</p></div>
+        <div><strong>The 60-second guarantee</strong><p>If a missed caller doesn't get a text back within 60 seconds, day or night, you don't pay for that month. I can't promise every caller books. I can promise every caller gets the text.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ================= NAME ================= -->
   <section class="plate" id="name">
     <div class="wrap story">
       <div class="story-copy">
-        <p class="label">Why Kytherly</p>
-        <h2>Named for the oldest known machine with gears.</h2>
-        <p>In 1901, sponge divers pulled a lump of corroded bronze from a shipwreck off the Greek island of Antikythera. Inside were dozens of interlocking gears, built more than 2,000 years ago to track the sun, the moon and the coming eclipses.</p>
-        <p class="pull">Small, precise parts, working together, so people could stop worrying about what came next.</p>
-        <p>That is what we build for a trade business. You do the work. The mechanism keeps time.</p>
+        <p class="label">Why "Kytherly"</p>
+        <h2>It's named after a 2,000-year-old computer.</h2>
+        <p>In 1901, sponge divers brought up a lump of corroded bronze from a shipwreck off the Greek island of Antikythera. Decades later, X-rays showed dozens of hand-cut gears inside. Turn a crank and it showed where the sun and moon would be, and it could predict eclipses years ahead.</p>
+        <p class="pull">Someone built that so nobody had to track the moon by hand. I build the small, practical version for trade shops.</p>
+        <p>Your shop has plenty to keep track of. I'd like to take a few of those jobs off your plate.</p>
       </div>
       <div class="facts">
         <div class="fact"><b>1901</b><span>Found by sponge divers off Antikythera</span></div>
         <div class="fact"><b>2,000+</b><span>Years old, give or take a century</span></div>
         <div class="fact"><b>30</b><span>Hand-cut bronze gears survive</span></div>
         <div class="fact"><b>82</b><span>Fragments recovered from the wreck</span></div>
-        <div class="fact wide"><canvas id="saros" aria-hidden="true"></canvas><div style="display:grid;gap:4px"><b>223</b><span>Lunar months on its Saros dial, the cycle it used to predict eclipses</span></div></div>
+        <div class="fact wide"><canvas id="saros" aria-hidden="true"></canvas><div class="fact-text"><b>223</b><span>Lunar months on its Saros dial, the cycle it used to predict eclipses</span></div></div>
       </div>
     </div>
   </section>
 
-  <!-- ================= AUDIT ================= -->
   <section class="cta-band" id="audit">
     <div class="wrap plate audit">
       <div class="audit-copy">
         <p class="label">Free missed-call audit</p>
-        <h2>Find out how many customers are calling someone else.</h2>
-        <p class="lede">Tell us about your shop. We'll call it like a customer would, during and after hours, and send back what we found. No obligation, no sales texts.</p>
+        <h2>Ever wonder what happens when someone calls you at 7 p.m.?</h2>
+        <p class="lede">Send me your shop's details. I'll call during the day and after hours, try your web form, and tell you what a customer would have run into. It's free, and you won't owe me anything.</p>
         <ul>
-          <li><svg><use href="#i-check"/></svg>What happens when you miss a call, day and night</li>
-          <li><svg><use href="#i-check"/></svg>How fast leads hear back today</li>
-          <li><svg><use href="#i-check"/></svg>Your review count against the shops near you</li>
+          <li><svg><use href="#i-check"/></svg>What callers get when you can't pick up</li>
+          <li><svg><use href="#i-check"/></svg>How long your web form takes to get a reply</li>
+          <li><svg><use href="#i-check"/></svg>How your Google reviews stack up against shops nearby</li>
         </ul>
       </div>
       <form id="auditForm" novalidate>
         <input type="hidden" name="_subject" value="Missed-call audit request from kytherly.com">
         <div class="row2">
           <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required placeholder="Jordan Reyes"></div>
-          <div class="field"><label for="f-biz">Business</label><input id="f-biz" name="biz" autocomplete="organization" required placeholder="Reyes Heating &amp; Air"></div>
+          <div class="field"><label for="f-biz">Business</label><input id="f-biz" name="biz" autocomplete="organization" required placeholder="Reyes Plumbing"></div>
         </div>
         <div class="row2">
           <div class="field"><label for="f-trade">Trade</label>
             <select id="f-trade" name="trade">
-              <option>Plumbing</option><option>HVAC</option><option>Electrical</option><option>Roofing</option><option>Garage doors</option><option>Landscaping</option><option>Other home service</option>
+              <option>Plumbing</option><option>HVAC</option><option>Electrical</option><option>Roofing</option><option>Garage doors</option><option>Landscaping</option><option>Something else</option>
             </select>
           </div>
           <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(720) 555-0148"></div>
         </div>
-        <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesair.com"></div>
+        <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesplumbing.com"></div>
         <button class="btn btn-primary" type="submit">Request my free audit <svg><use href="#i-arrow"/></svg></button>
-        <p class="form-note" id="formNote" aria-live="polite">We'll reach out within one business day. No spam, no automated sales texts.</p>
+        <p class="form-note" id="formNote" aria-live="polite">I'll get back to you within one business day. I only use your info to get in touch about the audit.</p>
         <div class="sent">
           <svg aria-hidden="true"><use href="#i-check"/></svg>
-          <h3 id="sentTitle" tabindex="-1">Your request is ready</h3>
-          <p id="sentBody">This preview isn't connected to an inbox yet, so nothing has been sent. Copy your request below to send it once Kytherly's contact address is live.</p>
-          <div id="copyBox" class="copy-box">
+          <h3 id="sentTitle" tabindex="-1">Got it</h3>
+          <p id="sentBody">I'll be in touch within one business day.</p>
+          <div id="copyBox" class="copy-box" hidden>
             <label for="copyText" class="sr-only">Your audit request</label>
             <textarea id="copyText" rows="4" readonly></textarea>
             <div class="copy-actions">
@@ -627,10 +694,11 @@ footer .brand svg{width:22px; height:22px}
 <footer>
   <div class="wrap">
     <a class="brand" href="#top"><svg><use href="#i-mark"/></svg>Kytherly</a>
-    <span>Front-desk automation for home-service trades · Colorado</span>
-    <span>kytherly.com · © 2026</span>
+    <p class="local" id="local">Front-desk texting for trade shops, run out of Colorado.</p>
+    <span>© 2026 Kytherly</span>
   </div>
 </footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (() => {
@@ -752,23 +820,51 @@ footer .brand svg{width:22px; height:22px}
       for (const g of order) drawGear(ctx, g, m, g.layer);
       if (opts.dial !== false) dial(ctx);
     }
-    let raf;
+    let raf, running = false, fling = 0;
     function loop() {
-      kick *= 0.96;
-      base += speed * (1 + kick*9);
+      kick *= 0.96; fling *= 0.955;
+      base += speed * (1 + kick*9) + fling;
       frame(); raf = requestAnimationFrame(loop);
     }
     layout(); frame();
     new ResizeObserver(() => { layout(); frame(); }).observe(canvas);
     const io = new IntersectionObserver(([e]) => {
       if (reduce) return;
-      cancelAnimationFrame(raf); if (e.isIntersecting) loop();
+      cancelAnimationFrame(raf); running = e.isIntersecting; if (running) loop();
     });
     io.observe(canvas);
-    return { kick(){ kick = 1; }, redraw: frame };
+    // grab the big wheel and turn it; let go and it coasts
+    if (opts.drag) {
+      let last = null, lastT = 0;
+      const ang = ev => { const r = canvas.getBoundingClientRect(); return Math.atan2(ev.clientY - r.top - cy, ev.clientX - r.left - cx); };
+      canvas.addEventListener('pointerdown', ev => {
+        last = ang(ev); lastT = performance.now(); fling = 0;
+        canvas.setPointerCapture(ev.pointerId); canvas.classList.add('grabbing');
+        opts.onGrab && opts.onGrab();
+      });
+      canvas.addEventListener('pointermove', ev => {
+        if (last === null) return;
+        const a = ang(ev); let d = a - last;
+        if (d > Math.PI) d -= 2*Math.PI; if (d < -Math.PI) d += 2*Math.PI;
+        const now = performance.now();
+        base += d; fling = d / Math.max(now - lastT, 1) * 16; last = a; lastT = now;
+        if (!running) frame();
+      });
+      const up = () => {
+        if (last === null) return;
+        last = null; canvas.classList.remove('grabbing');
+        fling = reduce ? 0 : Math.max(-0.4, Math.min(0.4, fling));
+        if (Math.abs(fling) > 0.14 && opts.onFling) opts.onFling();
+      };
+      canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+    }
+    return { kick(){ kick = 1; }, spin(v){ if (!reduce) fling += v; }, redraw: frame };
   }
 
-  const hero = mechanism(document.getElementById('mech'), {scale:190, cx:0.6, cy:0.47});
+  let flung = false;
+  const hero = mechanism(document.getElementById('mech'), {scale:190, cx:0.6, cy:0.47, drag:true,
+    onGrab(){ document.getElementById('spinHint').classList.add('gone'); },
+    onFling(){ if (!flung) { flung = true; toast("Easy there. That's 2,000-year-old technology."); } }});
   mechanism(document.getElementById('dialMini'), {scale:110, cx:0.5, cy:0.5, dial:false, speed:0.001});
 
   /* ---------- saros dial in facts ---------- */
@@ -793,25 +889,28 @@ footer .brand svg{width:22px; height:22px}
 
   /* ---------- example conversation ---------- */
   const SCRIPT = [
-    {t:'2:14:02', k:'sys', h:'<strong>Missed call</strong> · (720) 555-0148', clock:'2:14 PM', kick:1},
-    {t:'2:14:09', k:'out', h:'Hi, this is Sam from Peak Plumbing. Sorry we missed your call, we&rsquo;re probably on a job. How can we help?', kick:1},
+    {t:'2:14:02', k:'sys', h:'<strong>Missed call</strong> from (720) 555-0148', kick:1},
+    {t:'2:14:09', k:'out', h:'Hi, this is Sam at Peak Plumbing. Sorry we missed you, we&rsquo;re probably on a job. How can we help?', kick:1},
     {t:'2:15:31', k:'in',  h:'Water heater is leaking in the garage'},
-    {t:'2:15:38', k:'out', h:'Sorry to hear that! Grab any open time here: peakplumbing.co/book', kick:1},
-    {t:'2:16:40', k:'in',  h:'Done, tomorrow at 9'},
-    {t:'2:16:41', k:'win', h:'Booked · Thu 9 AM · Sam alerted', kick:1},
+    {t:'2:15:38', k:'out', h:'Sorry to hear that! Grab any open slot here and we&rsquo;ll come take a look: peakplumbing.co/book', kick:1},
+    {t:'2:16:40', k:'in',  h:'Booked tomorrow at 9. Thank you!!'},
+    {t:'2:16:41', k:'win', h:'Booked for Thu 9 AM. Sam got a heads-up.', kick:1},
   ];
   const log = document.getElementById('log');
-  function render(n){
-    log.innerHTML = SCRIPT.slice(0,n).map(e=>`<div class="ev ${e.k}"><time>${e.t.slice(0,4)}</time><div class="bubble">${e.h}</div></div>`).join('');
+  function render(n, typing){
+    log.innerHTML = SCRIPT.slice(0,n).map(e=>`<div class="ev ${e.k}"><time>${e.t.slice(0,4)}</time><div class="bubble">${e.h}</div></div>`).join('')
+      + (typing ? `<div class="ev ${typing} typing" aria-hidden="true"><time></time><div class="bubble"><i></i><i></i><i></i></div></div>` : '');
   }
   if (reduce) render(SCRIPT.length);
   else {
     let i = 0;
     (function step(){
-      if (i < SCRIPT.length){ const e = SCRIPT[i]; i++; render(i); if (e.kick) hero.kick(); setTimeout(step, i===1?900:1500); }
-      else { setTimeout(()=>{ i = 0; render(0); step(); }, 5200); }
+      if (i < SCRIPT.length){
+        const e = SCRIPT[i];
+        const show = () => { i++; render(i); if (e.kick) hero.kick(); setTimeout(step, i===1?900:1200); };
+        if (e.k === 'in' || e.k === 'out') { render(i, e.k); setTimeout(show, 1100); } else show();
+      } else { setTimeout(()=>{ i = 0; render(0); step(); }, 5200); }
     })();
-    render(1);
   }
 
   /* ---------- leak calculator ---------- */
@@ -819,6 +918,14 @@ footer .brand svg{width:22px; height:22px}
   const money = n => '$' + Math.round(n).toLocaleString('en-US');
   const short = n => n >= 1e6 ? '$'+(n/1e6).toFixed(1)+'M' : '$'+Math.round(n/1000)+'k';
   let shown = 0, target = 0, anim;
+  function quipFor(v){
+    if (v < 500)   return 'Small, but it adds up over a year.';
+    if (v < 1500)  return 'That buys a new set of tools every month.';
+    if (v < 3500)  return "That's about a truck payment.";
+    if (v < 7000)  return "That's a tech's paycheck going to the other guy.";
+    if (v < 15000) return "That's a new work van every few months.";
+    return "That's a lot. Fill out the audit form and I'll look at your shop this week.";
+  }
   function tween(){
     shown += (target - shown)*0.18;
     if (Math.abs(target-shown) < 1) shown = target;
@@ -831,6 +938,8 @@ footer .brand svg{width:22px; height:22px}
     $('callsOut').textContent = calls; $('ticketOut').textContent = money(job); $('rateOut').textContent = Math.round(rate*100)+'%';
     $('r1').textContent = Math.round(perMonth); $('r2').textContent = lost.toFixed(1); $('r3').textContent = short(val*12);
     for (const el of document.querySelectorAll('input[type=range]')) el.style.setProperty('--p', ((el.value-el.min)/(el.max-el.min)*100)+'%');
+    const q = quipFor(val);
+    if ($('quip').textContent !== q) { const el = $('quip'); el.textContent = q; el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
     target = val; cancelAnimationFrame(anim);
     if (reduce) { shown = target; $('leakOut').firstChild.nodeValue = money(Math.round(val/10)*10); } else tween();
   }
@@ -864,7 +973,7 @@ footer .brand svg{width:22px; height:22px}
       const what = bad.previousElementSibling.textContent.toLowerCase().replace(/^your /, '');
       note.textContent = bad.value.trim()
         ? `That ${what} doesn't look right. Check it and try again.`
-        : `Add your ${what} so we know who the audit is for.`;
+        : `Add your ${what} so I know who the audit is for.`;
       note.classList.add('err');
       bad.setAttribute('aria-invalid', 'true'); bad.setAttribute('aria-describedby', 'formNote');
       bad.focus(); return;
@@ -875,13 +984,14 @@ footer .brand svg{width:22px; height:22px}
       try {
         const r = await fetch(AUDIT_ENDPOINT, { method:'POST', headers:{'Accept':'application/json'}, body:new FormData(form) });
         if (!r.ok) throw new Error(r.status);
-        $('sentTitle').textContent = 'Request sent';
-        $('sentBody').textContent = `Thanks, ${d.name.split(' ')[0]}. We'll be in touch within one business day.`;
+        $('sentTitle').textContent = `Got it, ${d.name.trim().split(/\s+/)[0]}.`;
+        $('sentBody').textContent = "I'll email you from Kytherly within one business day. Go finish the job.";
         $('copyBox').hidden = true; form.classList.add('done'); $('sentTitle').focus();
+        burst(form); hero.spin(0.25);
       } catch {
         $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
-        $('sentTitle').textContent = 'We couldn’t send that';
-        $('sentBody').textContent = 'Your connection or browser blocked the request, so nothing was sent. Try again in a moment, or copy your request below and send it to us directly.';
+        $('sentTitle').textContent = 'That didn’t go through';
+        $('sentBody').textContent = "Something blocked the request, so nothing was sent. Try again in a minute. Your details are below so you don't have to type them twice.";
         $('copyBox').hidden = false; form.classList.add('done'); $('sentTitle').focus();
       } finally { btn.disabled = false; }
       return;
@@ -895,6 +1005,86 @@ footer .brand svg{width:22px; height:22px}
     catch { t.focus(); t.select(); $('copyBtn').textContent = 'Press Ctrl+C to copy'; }
   });
   $('editBtn').addEventListener('click', () => { form.classList.remove('done'); $('f-name').focus(); });
+
+  /* ---------- toast ---------- */
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 3800);
+  }
+
+  /* ---------- a little burst of gears when the form goes through ---------- */
+  function burst(el){
+    if (reduce) return;
+    const r = el.getBoundingClientRect(), x0 = r.left + r.width/2, y0 = r.top + 70;
+    for (let k = 0; k < 14; k++) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      g.setAttribute('class', 'burst'); g.setAttribute('viewBox', '0 0 48 48'); g.setAttribute('aria-hidden', 'true');
+      g.innerHTML = '<use href="#i-gear"/>';
+      g.style.left = (x0 - 11) + 'px'; g.style.top = (y0 - 11) + 'px';
+      document.body.appendChild(g);
+      const a = Math.random()*Math.PI*2, d = 90 + Math.random()*150, sc = .5 + Math.random()*.9;
+      g.animate([
+        { transform:'translate(0,0) rotate(0deg) scale(.2)', opacity:1 },
+        { transform:`translate(${Math.cos(a)*d}px, ${Math.sin(a)*d + 70}px) rotate(${(Math.random()-.5)*720}deg) scale(${sc})`, opacity:0 }
+      ], { duration:1100 + Math.random()*500, easing:'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => g.remove();
+    }
+  }
+
+  /* ---------- the business placeholder follows the trade you pick ---------- */
+  const BIZ = { 'Plumbing':'Reyes Plumbing', 'HVAC':'Reyes Heating & Air', 'Electrical':'Reyes Electric', 'Roofing':'Reyes Roofing',
+                'Garage doors':'Reyes Garage Doors', 'Landscaping':'Reyes Landscaping', 'Something else':'Reyes Home Services' };
+  $('f-trade').addEventListener('change', e => {
+    const b = BIZ[e.target.value] || 'Reyes Home Services';
+    $('f-biz').placeholder = b;
+    $('f-email').placeholder = 'jordan@' + b.toLowerCase().replace(/[^a-z]/g, '') + '.com';
+  });
+
+  /* ---------- sun / moon toggle ---------- */
+  const root = document.documentElement, themeBtn = $('themeBtn');
+  const isLight = () => root.dataset.theme ? root.dataset.theme === 'light' : !matchMedia('(prefers-color-scheme: dark)').matches;
+  const syncTheme = () => {
+    const l = isLight();
+    themeBtn.classList.toggle('is-light', l);
+    themeBtn.setAttribute('aria-label', l ? 'Switch to dark mode' : 'Switch to light mode');
+  };
+  syncTheme();
+  themeBtn.addEventListener('click', () => {
+    const next = isLight() ? 'dark' : 'light';
+    root.dataset.theme = next;
+    try { localStorage.setItem('ky-theme', next); } catch (e) {}
+    syncTheme(); readColors(); hero.redraw(); hero.spin(0.12);
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+  new MutationObserver(syncTheme).observe(root, { attributes:true, attributeFilter:['data-theme'] });
+
+  /* ---------- what time is it in Colorado ---------- */
+  const local = $('local');
+  const timeFmt = new Intl.DateTimeFormat('en-US', { timeZone:'America/Denver', hour:'numeric', minute:'2-digit' });
+  const hourFmt = new Intl.DateTimeFormat('en-US', { timeZone:'America/Denver', hour:'numeric', hourCycle:'h23' });
+  function tick(){
+    const now = new Date(), h = +hourFmt.format(now) % 24;
+    const mood = h < 6  ? "Asleep. The texts aren't."
+               : h < 8  ? 'Coffee first.'
+               : h < 12 ? 'Probably testing something.'
+               : h < 13 ? 'Lunch, most likely.'
+               : h < 18 ? 'Probably on a call or testing something.'
+               : h < 22 ? 'Off the clock, mostly.'
+               : 'Off for the night. The texts keep going.';
+    local.innerHTML = `It's <b>${timeFmt.format(now)}</b> here in Colorado. ${mood}`;
+  }
+  tick(); setInterval(tick, 30000);
+
+  /* ---------- click the logo five times ---------- */
+  let clicks = 0, clickT;
+  $('brand').addEventListener('click', () => {
+    clicks++; clearTimeout(clickT); clickT = setTimeout(() => { clicks = 0; }, 1500);
+    if (clicks === 5) { clicks = 0; toast('You found gear #31. The real mechanism only has 30 left.'); hero.spin(0.3); }
+  });
+
+  /* ---------- for whoever opens the console ---------- */
+  console.log('%cKytherly', 'font:22px Georgia,serif;color:#c8904f',
+    '\nPoking around the source? Me too, every time. Say hi through the audit form and mention you found this.');
 })();
 </script>
 </body>
