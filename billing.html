@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing &amp; cancellation — Kytherly</title>
+<meta name="description" content="Manage Kytherly invoices, update payment details, or request cancellation.">
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b1416;color:#ebe1cd;font:17px/1.65 system-ui,sans-serif}main{max-width:760px;margin:0 auto;padding:40px 24px 64px}a{color:#e2af73}header{border-bottom:1px solid #41504d;padding-bottom:20px}h1,h2{font-family:Georgia,serif;font-weight:400;line-height:1.2}h1{font-size:42px}h2{font-size:28px;margin-top:32px}.muted,small{color:#b2beb7}.button,button{display:inline-block;background:#c8904f;color:#0b1416;border:0;border-radius:6px;padding:12px 18px;font:700 16px system-ui;text-decoration:none;cursor:pointer}label{display:block;margin-top:18px}input,textarea,select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #708078;background:#111e21;color:#ebe1cd;border-radius:5px;font:inherit}button{margin-top:20px}button:disabled{opacity:.6}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #e2af73;outline-offset:4px}.notice{padding:16px;background:#172528;border-left:3px solid #c8904f}footer{margin-top:36px;border-top:1px solid #41504d;padding-top:20px}#result{white-space:pre-line}
+</style>
+</head>
+<body><main>
+<header><a href="/">← Kytherly home</a></header>
+<h1>Billing, without the runaround.</h1>
+<p>Use our secure Stripe portal to download invoices and update your payment details.</p>
+<a class="button" href="https://billing.stripe.com/p/login/00waEX8R7dS6dgt1Eq43S00">Open billing portal</a>
+<h2>Request cancellation</h2>
+<p>Send a request here at any time. Kytherly reviews it and confirms the effective date by email. Submitting this form does not automatically change your Stripe subscription.</p>
+<p class="notice">Starter (Never Miss a Customer), Growth, and Full Front Desk have a three-month minimum, then continue month to month. Cancellation takes effect at the end of the current billing period once that minimum is complete. For other services, your agreed order terms apply.</p>
+<form id="cancel-form" action="https://formspree.io/f/mrpeoeaj" method="post">
+<input type="hidden" name="_subject" value="Kytherly cancellation request">
+<input type="hidden" name="request_type" value="Cancellation request">
+<label for="name">Name<input id="name" name="name" autocomplete="name" required maxlength="150"></label>
+<label for="email">Billing email<input id="email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
+<label for="business">Business name<input id="business" name="business" autocomplete="organization" required maxlength="200"></label>
+<label for="service">Service<select id="service" name="service" required><option value="">Select your service</option><option>Starter / Never Miss a Customer</option><option>Growth</option><option>Full Front Desk</option><option>Website or website care</option><option>Missed-call service</option><option>Other / multiple services</option></select></label>
+<label for="details">Anything else? (optional)<textarea id="details" name="details" rows="3" maxlength="3000"></textarea></label>
+<p><small>We use these details to identify your account and handle your request. This form is sent through Formspree. Please don't include payment card details or passwords.</small></p>
+<button type="submit">Send cancellation request</button>
+<p id="result" role="status" aria-live="polite"></p>
+</form>
+<footer>Questions or trouble with the form? Email <a href="mailto:ryleechapin@kytherly.com?subject=Kytherly%20billing">ryleechapin@kytherly.com</a>.</footer>
+</main>
+<script>
+const form=document.getElementById('cancel-form'),result=document.getElementById('result'),button=form.querySelector('button');
+form.addEventListener('submit',async event=>{
+ event.preventDefault(); if(!form.reportValidity())return;
+ button.disabled=true;result.textContent='Sending your request…';
+ try{const response=await fetch(form.action,{method:'POST',headers:{Accept:'application/json'},body:new FormData(form)});if(!response.ok)throw new Error('Request not accepted');result.textContent='Your request was received. Kytherly will review it and email you to confirm the cancellation date. Your subscription has not been automatically changed.';form.reset();}
+ catch{result.textContent='Your request could not be confirmed. Please email ryleechapin@kytherly.com with your business name, billing email, and the service you want to cancel. Your form details are still here.';}
+ finally{button.disabled=false;}
+});
+</script></body></html>
