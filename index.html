@@ -291,6 +291,10 @@ form{display:grid; gap:16px; padding:30px; border-radius:var(--radius); backgrou
 .field input:focus,.field select:focus{outline:none; border-color:var(--verdigris); box-shadow:0 0 0 3px var(--verd-soft)}
 form .btn{justify-content:center; width:100%}
 .form-note{font-size:.8rem; color:var(--mute)}
+.consent{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; font-size:.8rem; line-height:1.5; color:var(--mute); cursor:pointer}
+.consent input{width:18px; height:18px; margin:2px 0 0; accent-color:var(--bronze); cursor:pointer}
+.consent b{color:var(--parch); font-weight:600}
+.consent a{color:inherit}
 .form-note.err{color:var(--bronze-hi); font-weight:600}
 .field input[aria-invalid="true"]{border-color:var(--bronze-hi); box-shadow:0 0 0 3px color-mix(in srgb, var(--bronze) 18%, transparent)}
 .sent h3:focus{outline:none}
@@ -658,6 +662,7 @@ footer .brand svg{width:22px; height:22px}
       </div>
       <form id="auditForm" novalidate>
         <input type="hidden" name="_subject" value="Missed-call audit request from kytherly.com">
+        <input type="hidden" name="sms_disclosure_version" value="2026-11-12">
         <div class="row2">
           <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required placeholder="Jordan Reyes"></div>
           <div class="field"><label for="f-biz">Business</label><input id="f-biz" name="biz" autocomplete="organization" required placeholder="Reyes Plumbing"></div>
@@ -671,6 +676,10 @@ footer .brand svg{width:22px; height:22px}
           <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(720) 555-0148"></div>
         </div>
         <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesplumbing.com"></div>
+        <label class="consent" for="f-sms">
+          <input id="f-sms" name="sms_consent" type="checkbox" value="Yes, agreed to texts about this audit request">
+          <span><b>Text me about my audit request (optional).</b> By checking this box, you agree to get text messages from Kytherly at the phone number above about this request, like scheduling the audit visit and sending results. Up to 5 messages per request. Message and data rates may apply. Reply HELP for help or STOP to opt out at any time. You don't have to agree to texts to get the audit. <a href="/terms.html#sms">SMS terms</a> · <a href="/privacy.html#sms">Privacy policy</a></span>
+        </label>
         <button class="btn btn-primary" type="submit">Request my free audit <svg><use href="#i-arrow"/></svg></button>
         <p class="form-note" id="formNote" aria-live="polite">I'll get back to you within one business day. I only use your info to get in touch about the audit.</p>
         <p class="form-note">Forms are handled through Formspree. <a href="/privacy.html">Privacy policy</a></p>
@@ -993,14 +1002,14 @@ footer .brand svg{width:22px; height:22px}
         $('copyBox').hidden = true; form.classList.add('done'); $('sentTitle').focus();
         burst(form); hero.spin(0.25);
       } catch {
-        $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+        $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}\nTexts about this request: ${d.sms_consent ? 'Yes' : 'No'}`;
         $('sentTitle').textContent = 'That didn’t go through';
         $('sentBody').textContent = "Something blocked the request, so nothing was sent. Try again in a minute. Your details are below so you don't have to type them twice.";
         $('copyBox').hidden = false; form.classList.add('done'); $('sentTitle').focus();
       } finally { btn.disabled = false; }
       return;
     }
-    $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+    $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}\nTexts about this request: ${d.sms_consent ? 'Yes' : 'No'}`;
     form.classList.add('done'); $('sentTitle').focus();
   });
   $('copyBtn').addEventListener('click', async () => {
