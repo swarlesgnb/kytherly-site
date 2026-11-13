@@ -309,6 +309,7 @@ form.done > :not(.sent){display:none}
 footer{border-top:1px solid var(--line)}
 footer .wrap{display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; padding-block:30px; color:var(--mute); font-size:.88rem}
 footer .brand{font-size:1.1rem; color:var(--parch)}
+footer address{font-style:normal}
 footer .brand svg{width:22px; height:22px}
 
 /* ---------- small delights: margin notes, toggles, toasts ---------- */
@@ -668,9 +669,8 @@ footer .brand svg{width:22px; height:22px}
               <option>Plumbing</option><option>HVAC</option><option>Electrical</option><option>Roofing</option><option>Garage doors</option><option>Landscaping</option><option>Something else</option>
             </select>
           </div>
-          <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(720) 555-0148"></div>
+          <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesplumbing.com"></div>
         </div>
-        <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="jordan@reyesplumbing.com"></div>
         <button class="btn btn-primary" type="submit">Request my free audit <svg><use href="#i-arrow"/></svg></button>
         <p class="form-note" id="formNote" aria-live="polite">I'll get back to you within one business day. I only use your info to get in touch about the audit.</p>
         <p class="form-note">Forms are handled through Formspree. <a href="/privacy.html">Privacy policy</a></p>
@@ -696,6 +696,7 @@ footer .brand svg{width:22px; height:22px}
   <div class="wrap">
     <a class="brand" href="#top"><svg><use href="#i-mark"/></svg>Kytherly</a>
     <p class="local" id="local">Front-desk texting for trade shops, run out of Colorado.</p>
+    <address>Kytherly (Rylee Chapin) · 12235 Helena St, Brighton, CO 80603 · <a href="tel:+17208692143">(720) 869-2143</a></address>
     <a href="/billing.html">Billing, invoices &amp; cancellation</a>
     <a href="/terms.html">Service terms</a>
     <a href="/privacy.html">Privacy</a>
@@ -993,14 +994,14 @@ footer .brand svg{width:22px; height:22px}
         $('copyBox').hidden = true; form.classList.add('done'); $('sentTitle').focus();
         burst(form); hero.spin(0.25);
       } catch {
-        $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+        $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nEmail: ${d.email}`;
         $('sentTitle').textContent = 'That didn’t go through';
         $('sentBody').textContent = "Something blocked the request, so nothing was sent. Try again in a minute. Your details are below so you don't have to type them twice.";
         $('copyBox').hidden = false; form.classList.add('done'); $('sentTitle').focus();
       } finally { btn.disabled = false; }
       return;
     }
-    $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nPhone: ${d.phone}\nEmail: ${d.email}`;
+    $('copyText').value = `Missed-call audit request\n${d.name}, ${d.biz} (${d.trade})\nEmail: ${d.email}`;
     form.classList.add('done'); $('sentTitle').focus();
   });
   $('copyBtn').addEventListener('click', async () => {
